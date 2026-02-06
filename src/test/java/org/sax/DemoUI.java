@@ -2,6 +2,7 @@ package org.sax;
 
 import org.sax.mac.CAccessibilityController;
 import org.sax.mac.MacAXRole;
+import org.sax.mac.TransparentPopupFactory;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleRole;
@@ -33,6 +34,8 @@ public class DemoUI extends JFrame {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                TransparentPopupFactory.setActive(true);
 
                 DemoUI d = new DemoUI();
                 d.pack();
