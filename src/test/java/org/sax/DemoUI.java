@@ -93,6 +93,7 @@ public class DemoUI extends JFrame {
         JButton postSecret = new JButton("<html><u>postsecret.com</u></html>");
         postSecret.setBorderPainted(false);
         postSecret.putClientProperty(MacAXRole.PROPERTY_MAC_AX_ROLE, MacAXRole.AXLink);
+        postSecret.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         postSecret.addActionListener(e -> {
             try {
                 Desktop.getDesktop().browse(new URI("https://postsecret.com/"));
