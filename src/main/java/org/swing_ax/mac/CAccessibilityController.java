@@ -1,11 +1,7 @@
-package org.sax.mac;
+package org.swing_ax.mac;
 
 import javax.accessibility.*;
-import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InvocationEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -24,12 +20,12 @@ public class CAccessibilityController {
             protected void dispatchEvent(AWTEvent event) {
                 CAccessibilityController controller = CAccessibilityController.get();
                 if (controller.hasListeners()) {
-                    InvocationEventInfo invoInfo = CAccessibilityController.get().dispatchEvent(event);
+                    InvocationEventInfo invoInfo = controller.dispatchEvent(event);
                     if (invoInfo != null) {
                         if (!invoInfo.invocationEvent.isDispatched()) {
                             super.dispatchEvent(invoInfo.invocationEvent);
                         }
-                        CAccessibilityController.get().fireNotificationListeners(invoInfo);
+                        controller.fireNotificationListeners(invoInfo);
                         return;
                     }
                 }
@@ -64,6 +60,7 @@ public class CAccessibilityController {
 
             isInitialized = true;
         } catch(Throwable t) {
+            // try adding "--add-opens java.desktop/java.awt.event=ALL-UNNAMED --add-opens java.desktop/sun.lwawt.macosx=ALL-UNNAMED" to your VM arguments
             t.printStackTrace();
         }
     }
@@ -79,132 +76,6 @@ public class CAccessibilityController {
         returnValue.setAccessible(true);
         return returnValue;
     }
-
-//    public static boolean valueChanged(Accessible accessible, String newValue) {
-//        try {
-//            Class z1 = Class.forName("sun.lwawt.macosx.CAccessible");
-//            Method m = getMethod(z1, "getCAccessible", Accessible.class);
-//            Object t = m.invoke(null, accessible);
-//
-//            Class z2 = Class.forName("sun.lwawt.macosx.CFRetainedResource");
-//            Field f = getField(z2, "ptr");
-//            Long ptr = (Long) f.get(t);
-//
-//            if (ptr == 0)
-//                return false;
-//
-//            class RequestManager implements RequestListener, NotificationListener {
-//                {
-//                    RequestManager rm = this;
-//                    Timer timer = new Timer(10000, null);
-//                    timer.addActionListener(new ActionListener() {
-//
-//                        @Override
-//                        public void actionPerformed(ActionEvent e) {
-//                            get().removeRequestListener(rm);
-//                            get().removeNotificationListener(rm);
-//                            timer.stop();
-//                            try {
-//                                System.out.println("########################## STOPPING");
-//                            } catch (Throwable t) {
-//                                t.printStackTrace();
-//                            }
-//                        }
-//                    });
-//                    timer.start();
-//                }
-//
-//                @Override
-//                public void notify(MethodInvocationNotification notification) {
-//                    try {
-//                        Object v = notification.getReturnValue();
-//                        if (notification.isIntercepted()) {
-//                            System.out.println("\t(intercepted " + notification.getMethod().name() + ")");
-//                        }
-//                        if (v instanceof Object[])
-//                            v = Arrays.asList( (Object[]) v);
-//                        System.out.println("\t-> " + v);
-//                    } catch(Exception e) {
-//                        e.printStackTrace();;
-//                    }
-//                }
-//
-//                @Override
-//                public void request(MethodInvocationRequest r) {
-//                    System.out.println(r);
-//                    if (r.getMethod() == MethodID.getAccessibleRole) {
-//                        r.intercept("text");
-//                    }
-//                }
-//            }
-//
-//            RequestManager m2 = new RequestManager();
-//            get().addRequestListener(m2);
-//            get().addNotificationListener(m2);
-//
-//            System.out.println("######### STARTING");
-//            Method m3 = getMethod(z1, "valueChanged", Long.TYPE);
-//            m3.invoke(null, ptr);
-//            return true;
-//        } catch(Throwable t) {
-//            t.printStackTrace();
-//        }
-//        return false;
-//    }
-
-//    public static void focusChanged(JComponent other) {
-//        System.out.println("########################## STARTING");
-//        try {
-//            Class z1 = Class.forName("sun.lwawt.macosx.CAccessibility");
-//            Field f = getField(z1, "sAccessibility");
-//            Object cAccessibility = f.get(null);
-//
-//            Method m = getMethod(z1, "focusChanged");
-//
-//            get().addRequestListener(new RequestListener() {
-//                int ctr = 0;
-//                @Override
-//                public void request(MethodInvocationRequest r) {
-//                    RequestListener rl = this;
-//                    System.out.println(r);
-//                    if (r.getMethod() == MethodID.getFocusOwner) {
-//                        ctr++;
-//                        try {
-//                            Class z2 = Class.forName("sun.lwawt.macosx.CAccessible");
-//                            Method m2 = getMethod(z2, "getCAccessible", Accessible.class);
-//                            Object j = m2.invoke(null, other);
-//
-//                            r.intercept(j);
-//
-//                            if (ctr == 1) {
-//                                Timer timer = new Timer(10000, null);
-//                                timer.addActionListener(new ActionListener() {
-//
-//                                    @Override
-//                                    public void actionPerformed(ActionEvent e) {
-//                                        get().removeRequestListener(rl);
-//                                        timer.stop();
-//                                        try {
-//                                            System.out.println("########################## STOPPING");
-//                                        } catch (Throwable t) {
-//                                            t.printStackTrace();
-//                                        }
-//                                    }
-//                                });
-//                                timer.start();
-//                            }
-//                        } catch(Exception e) {
-//                            e.printStackTrace();;
-//                        }
-//                    }
-//                }
-//            });
-//
-//            Object t = m.invoke(cAccessibility);
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
 //    public static boolean unregisterFromCocoaAXSystem(Accessible accessible) {
 //        try {
@@ -255,20 +126,19 @@ public class CAccessibilityController {
             }
 
             if (anonClassname != null) {
-                MethodID methodID = MethodID.getForAnonClassName(anonClassname);
-                if (methodID == null) {
-                    throw new IllegalStateException("Unrecognized anonymous inner class: " + anonClassname);
+                Method method = callable.getClass().getEnclosingMethod();
+                // method may be null for getAccessibleActionCount, which uses a lambda (not an inner class)
+                if (method != null) {
+                    InvocationEventInfo invoInfo = new InvocationEventInfo(invocationEvent, method, runnable, callable);
+                    RequestListener[] requestListenerArray = requestListeners.toArray(new RequestListener[0]);
+                    for (RequestListener l : requestListenerArray) {
+                        MethodInvocationRequest r = new MethodInvocationRequest(invoInfo);
+                        l.request(r);
+                        if (r.isIntercepted())
+                            break;
+                    }
+                    return invoInfo;
                 }
-
-                InvocationEventInfo invoInfo = new InvocationEventInfo(invocationEvent, methodID, runnable, callable);
-                RequestListener[] requestListenerArray = requestListeners.toArray(new RequestListener[0]);
-                for (RequestListener l : requestListenerArray) {
-                    MethodInvocationRequest r = new MethodInvocationRequest(invoInfo);
-                    l.request(r);
-                    if (r.isIntercepted())
-                        break;
-                }
-                return invoInfo;
             }
         } catch(Throwable t) {
             t.printStackTrace();
@@ -285,67 +155,8 @@ public class CAccessibilityController {
         }
     }
 
-    private static Map<String, MethodID> methodsByAnonClassIndexMap = new HashMap<>();
-    public enum MethodID {
-        getAccessibleActionDescription(2, String.class),
-        doAccessibleAction(3, null),
-        getSize(4, Dimension.class),
-        getAccessibleSelection(5, AccessibleSelection.class),
-        ax_getAccessibleSelection(6, Accessible.class),
-        addAccessibleSelection(7, null),
-        getAccessibleContext(8, AccessibleContext.class),
-        isAccessibleChildSelected(9, Boolean.TYPE),
-        getAccessibleStateSet(10, AccessibleStateSet.class),
-        contains(11, Boolean.TYPE),
-        getAccessibleRole(12, String.class),
-        getLocationOnScreen(13, Point.class),
-        getCharCount(14, Integer.TYPE),
-        getAccessibleParent(15, Accessible.class),
-        getAccessibleIndexInParent(16, Integer.TYPE),
-        getAccessibleComponent(17, AccessibleComponent.class),
-        getAccessibleValue(18, AccessibleValue.class),
-        getAccessibleName(19, String.class),
-        getAccessibleText(20, AccessibleText.class),
-        getAccessibleDescription(21, String.class),
-        isFocusTraversable(22, Boolean.TYPE),
-        accessibilityHitTest(23, Accessible.class),
-        getAccessibleAction(24, AccessibleAction.class),
-        isEnabled(25, Boolean.TYPE),
-        requestFocus(26, null),
-        requestSelection(27, null),
-        getMaximumAccessibleValue(28, Number.class),
-        getMinimumAccessibleValue(29, Number.class),
-        getAccessibleRoleDisplayString(30, String.class),
-        getCurrentAccessibleValue(31, Number.class),
-        getFocusOwner(32, Accessible.class),
-        getInitialAttributeStates(33, boolean[].class),
-        invokeGetChildrenAndRoles(34, Object[].class),
-        getChildrenAndRolesRecursive(35, Object[].class),
-        getChildren(38, Object[].class),
-        getAWTView(39, Long.TYPE),
-        isTreeRootVisible(40, Boolean.TYPE);
-
-        static MethodID getForAnonClassName(String classname) {
-            return methodsByAnonClassIndexMap.get(classname);
-        }
-
-        public final int anonClassIndex;
-
-        /**
-         * If this is null then this method is using a Runnable; if this is non-null then this method
-         * is using a Callable.
-         */
-        public final Class returnType;
-
-        MethodID(int anonClassIndex, Class returnType) {
-            this.anonClassIndex = anonClassIndex;
-            this.returnType = returnType;
-            methodsByAnonClassIndexMap.put(Integer.toString(anonClassIndex), this);
-        }
-    }
-
     private static class InvocationEventInfo {
-        private final MethodID methodID;
+        private final Method method;
         private final InvocationEvent invocationEvent;
         private final Runnable invocationEventRunnable;
         private final Callable<?> runnableCallable;
@@ -361,9 +172,9 @@ public class CAccessibilityController {
          *                                Runnable (like when you request the focus), or if it's a
          *                                LWCToolkit$CallableWrapper (like when you need a return value)
          */
-        private InvocationEventInfo(InvocationEvent invocationEvent, MethodID methodID,
+        private InvocationEventInfo(InvocationEvent invocationEvent, Method method,
                                     Runnable invocationEventRunnable, Callable<?> runnableCallable) {
-            this.methodID = Objects.requireNonNull(methodID);
+            this.method = Objects.requireNonNull(method);
             this.invocationEvent = Objects.requireNonNull(invocationEvent);
             this.invocationEventRunnable = Objects.requireNonNull(invocationEventRunnable);
             this.runnableCallable = runnableCallable;
@@ -437,12 +248,12 @@ public class CAccessibilityController {
 
         void intercept(Object returnValue) {
             // bounds check:
-            if (methodID.returnType == null) {
+            if (method.getReturnType() == Void.class) {
                 if (returnValue != null)
-                    throw new IllegalArgumentException("The method " + methodID + " does not return a value; so we can't intercept it and return " + returnValue.getClass().getName());
+                    throw new IllegalArgumentException("The method " + method.getName() + " does not return a value; so we can't intercept it and return " + returnValue.getClass().getName());
             } else {
-                if ( !(methodID.returnType.isInstance(returnValue) || (returnValue == null && !methodID.returnType.isPrimitive())))
-                    throw new IllegalArgumentException("The method " + methodID + " expects a " + methodID.returnType.getName() + ", not " +
+                if ( !(method.getReturnType().isInstance(returnValue) || (returnValue == null && !method.getReturnType().isPrimitive())))
+                    throw new IllegalArgumentException("The method " + method.getName() + " expects a " + method.getReturnType().getName() + ", not " +
                             (returnValue == null ? "null" : "a " + returnValue.getClass().getName()));
             }
 
@@ -501,8 +312,8 @@ public class CAccessibilityController {
             return invoInfo.isIntercepted();
         }
 
-        public MethodID getMethod() {
-            return invoInfo.methodID;
+        public Method getMethod() {
+            return invoInfo.method;
         }
 
         public Object getArgument(int argIndex) {
@@ -524,7 +335,7 @@ public class CAccessibilityController {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(invoInfo.methodID.name());
+            sb.append(invoInfo.method.getName());
             sb.append("(");
             Object[] args = getArguments().values().toArray(new Object[0]);
             for (int a = 0; a < args.length; a++) {
@@ -545,8 +356,8 @@ public class CAccessibilityController {
             this.invoInfo = Objects.requireNonNull(invoInfo);
         }
 
-        public MethodID getMethod() {
-            return invoInfo.methodID;
+        public Method getMethod() {
+            return invoInfo.method;
         }
 
         public Object getReturnValue() throws Exception {

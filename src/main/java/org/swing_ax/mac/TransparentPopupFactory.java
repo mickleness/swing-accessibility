@@ -23,26 +23,10 @@
  * questions.
  */
 
-package org.sax.mac;
+package org.swing_ax.mac;
 
 import javax.swing.*;
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
-import java.awt.Panel;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -87,6 +71,12 @@ public class TransparentPopupFactory extends PopupFactory {
     }
 
     @Override
+    public Popup getPopup(Component owner, Component contents,
+                          int x, int y) throws IllegalArgumentException {
+        return getPopup(owner, contents, x, y, false);
+    }
+
+    // this method does not exist in Java 1.8, but in later JDK's this could include @override
     protected Popup getPopup(Component owner, Component contents, int x, int y, boolean isHeavyWeightPopup) throws IllegalArgumentException {
         return new TransparentPopup(owner, contents, x, y, isHeavyWeightPopup);
     }

@@ -1,26 +1,12 @@
-package org.sax;
+package org.swing_ax;
 
-import org.sax.mac.CAccessibilityController;
-import org.sax.mac.MacAXRole;
-import org.sax.mac.TransparentPopupFactory;
+import org.swing_ax.mac.CAccessibilityController;
+import org.swing_ax.mac.MacAXRole;
+import org.swing_ax.mac.TransparentPopupFactory;
 
-import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleRole;
-import javax.accessibility.AccessibleState;
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -54,10 +40,10 @@ public class DemoUI extends JFrame {
                         Object[] array = (Object[]) returnValue;
                         returnValue = Arrays.asList(array);
                     }
-//                    System.out.println(notification.getMethod() + " -> " + returnValue);
-//                    for (Map.Entry<String, Object> e : notification.getArguments().entrySet()) {
-//                        System.out.println("\t" + e.getKey() + " = " + e.getValue());
-//                    }
+                    System.out.println(notification.getMethod() + " -> " + returnValue);
+                    for (Map.Entry<String, Object> e : notification.getArguments().entrySet()) {
+                        System.out.println("\t" + e.getKey() + " = " + e.getValue());
+                    }
                 } catch(Exception e) {
                     e.printStackTrace();
                 }

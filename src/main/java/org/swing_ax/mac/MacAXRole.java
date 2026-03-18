@@ -1,9 +1,7 @@
-package org.sax.mac;
+package org.swing_ax.mac;
 
 import javax.accessibility.AccessibleRole;
 import javax.swing.*;
-import java.awt.event.InvocationEvent;
-import java.util.function.Function;
 
 public class MacAXRole extends AccessibleRole {
 
@@ -13,13 +11,13 @@ public class MacAXRole extends AccessibleRole {
         CAccessibilityController.get().addRequestListener(new CAccessibilityController.RequestListener() {
             @Override
             public void request(CAccessibilityController.MethodInvocationRequest r) {
-                if (r.getMethod() == CAccessibilityController.MethodID.getAccessibleRole &&
+                if (r.getMethod().getName().equals("getAccessibleRole") &&
                         r.getArgument(0) instanceof JComponent) {
                     JComponent jc = (JComponent) r.getArgument(0);
                     MacAXRole macAXRole = (MacAXRole) jc.getClientProperty(PROPERTY_MAC_AX_ROLE);
                     if (macAXRole != null)
                         r.intercept(macAXRole.getKey());
-                } else if (r.getMethod() == CAccessibilityController.MethodID.invokeGetChildrenAndRoles) {
+                } else if (r.getMethod().getName().equals("invokeGetChildrenAndRoles")) {
                     r.filter(objects -> {
                         for (int a = 0; a < objects.length; a++) {
                             if (objects[a] instanceof JComponent &&

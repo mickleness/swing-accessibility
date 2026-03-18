@@ -1,4 +1,4 @@
-package org.sax.mac;
+package org.swing_ax.mac;
 
 import javax.swing.*;
 import java.awt.*;
