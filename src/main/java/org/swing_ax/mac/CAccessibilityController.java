@@ -106,39 +106,33 @@ public class CAccessibilityController {
         InvocationEvent invocationEvent = (InvocationEvent) event;
         try {
             String paramString = event.paramString();
-            String anonClassname = null;
             Runnable runnable = null;
             Callable<?> callable = null;
+            Method method = null;
             if (paramString.contains("sun.lwawt.macosx.CAccessibility$")) {
+                // for Runnables with no return value:
                 runnable = (Runnable) field_invocationEvent_runnable.get(event);
-                String runnable_classname = runnable.getClass().getName();
-                if (runnable_classname.startsWith("sun.lwawt.macosx.CAccessibility$")) {
-                    anonClassname = runnable_classname.substring(32);
-                }
+                method = runnable.getClass().getEnclosingMethod();
             } else if (paramString.contains("sun.lwawt.macosx.LWCToolkit$CallableWrapper")) {
+                // for everything that uses a return value
                 runnable = (Runnable) field_invocationEvent_runnable.get(event);
                 callable = (Callable<?>) field_callableWrapper_callable.get(runnable);
-
-                String callableWrapper_callable_classname = callable.getClass().getName();
-                if (callableWrapper_callable_classname.startsWith("sun.lwawt.macosx.CAccessibility$")) {
-                    anonClassname = callableWrapper_callable_classname.substring(32);
+                method = callable.getClass().getEnclosingMethod();
+                if (method == null) {
+                    // this can happen for lambdas, such as getAccessibleActionCount
                 }
             }
 
-            if (anonClassname != null) {
-                Method method = callable.getClass().getEnclosingMethod();
-                // method may be null for getAccessibleActionCount, which uses a lambda (not an inner class)
-                if (method != null) {
-                    InvocationEventInfo invoInfo = new InvocationEventInfo(invocationEvent, method, runnable, callable);
-                    RequestListener[] requestListenerArray = requestListeners.toArray(new RequestListener[0]);
-                    for (RequestListener l : requestListenerArray) {
-                        MethodInvocationRequest r = new MethodInvocationRequest(invoInfo);
-                        l.request(r);
-                        if (r.isIntercepted())
-                            break;
-                    }
-                    return invoInfo;
+            if (method != null) {
+                InvocationEventInfo invoInfo = new InvocationEventInfo(invocationEvent, method, runnable, callable);
+                RequestListener[] requestListenerArray = requestListeners.toArray(new RequestListener[0]);
+                for (RequestListener l : requestListenerArray) {
+                    MethodInvocationRequest r = new MethodInvocationRequest(invoInfo);
+                    l.request(r);
+                    if (r.isIntercepted())
+                        break;
                 }
+                return invoInfo;
             }
         } catch(Throwable t) {
             t.printStackTrace();
