@@ -2,6 +2,7 @@ package org.swing_ax.mac;
 
 import javax.accessibility.*;
 import java.awt.*;
+import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
 /**
@@ -12,6 +13,281 @@ import java.util.function.Supplier;
  * </p>
  */
 public abstract class CAccessibilityHandler {
+
+    public static final Object RETURN_VALUE_UNSUPPORTED = new Object();
+
+    /**
+     * Return a value for a given CAccessibility or CAccessibleText metthod, or return RETURN_VALUE_UNSUPPORTED.
+     * <p>
+     * Subclasses usually shouldn't need to override this method unless they need to correct the incoming arguments.
+     */
+    public Object invoke(Method method, Supplier defaultSupplier, Runnable defaultRunnable, Component component, Object[] arguments) {
+        switch (method.getName()) {
+            case "getAccessibleActionDescription":
+                return getAccessibleActionDescription(defaultSupplier,
+                        (AccessibleAction) arguments[0],
+                        (Integer) arguments[1],
+                        component);
+            case "doAccessibleAction":
+                doAccessibleAction(defaultRunnable,
+                        (AccessibleAction) arguments[0],
+                        (Integer) arguments[1],
+                        component);
+                return null;
+            case "getSize":
+                return getSize(defaultSupplier,
+                        (AccessibleComponent) arguments[0],
+                        component);
+            case "getAccessibleSelection":
+                return getAccessibleSelection(defaultSupplier,
+                        (AccessibleContext) arguments[0],
+                        component);
+            case "ax_getAccessibleSelection":
+                return ax_getAccessibleSelection(defaultSupplier,
+                        (AccessibleContext) arguments[0],
+                        (Integer) arguments[1],
+                        component);
+            case "addAccessibleSelection":
+                addAccessibleSelection(defaultRunnable,
+                        (AccessibleContext) arguments[0],
+                        (Integer) arguments[1],
+                        component);
+                return null;
+            case "getAccessibleContext":
+                return getAccessibleContext(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "isAccessibleChildSelected":
+                return isAccessibleChildSelected(defaultSupplier,
+                        (Accessible) arguments[0],
+                        (Integer) arguments[1],
+                        component);
+            case "getAccessibleStateSet":
+                return getAccessibleStateSet(defaultSupplier,
+                        (AccessibleContext) arguments[0],
+                        component);
+            case "contains":
+                return contains(defaultSupplier,
+                        (AccessibleContext) arguments[0],
+                        (AccessibleState) arguments[1],
+                        component);
+            case "getAccessibleRole":
+                return getAccessibleRole(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getLocationOnScreen":
+                return getLocationOnScreen(defaultSupplier,
+                        (AccessibleComponent) arguments[0],
+                        component);
+            case "getCharCount":
+                return getCharCount(defaultSupplier,
+                        (AccessibleText) arguments[0],
+                        component);
+            case "getAccessibleParent":
+                return getAccessibleParent(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleIndexInParent":
+                return getAccessibleIndexInParent(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleComponent":
+                return getAccessibleComponent(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleValue":
+                return getAccessibleValue(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleName":
+                return getAccessibleName(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleText":
+                return getAccessibleText(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleDescription":
+                return getAccessibleDescription(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "isFocusTraversable":
+                return isFocusTraversable(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "accessibilityHitTest":
+                return accessibilityHitTest(defaultSupplier,
+                        (Container) arguments[0],
+                        (Float) arguments[1],
+                        (Float) arguments[2]);
+            case "getAccessibleAction":
+                return getAccessibleAction(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            // TODO: reevaluate getAccessibleActionCount (lambdas are a different case)
+            case "isEnabled":
+                return isEnabled(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "requestFocus":
+                requestFocus(defaultRunnable,
+                        (Accessible) arguments[0],
+                        component);
+                return null;
+            case "requestSelection":
+                requestSelection(defaultRunnable,
+                        (Accessible) arguments[0],
+                        component);
+                return null;
+            case "getMaximumAccessibleValue":
+                return getMaximumAccessibleValue(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getMinimumAccessibleValue":
+                return getMinimumAccessibleValue(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleRoleDisplayString":
+                return getAccessibleRoleDisplayString(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getCurrentAccessibleValue":
+                return getCurrentAccessibleValue(defaultSupplier,
+                        (AccessibleValue) arguments[0],
+                        component);
+            case "getFocusOwner":
+                return getFocusOwner(defaultSupplier,
+                        component);
+            case "getInitialAttributeStates":
+                return getInitialAttributeStates(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "invokeGetChildrenAndRoles":
+                return invokeGetChildrenAndRoles(defaultSupplier,
+                        (Accessible) arguments[0],
+                        (Component) arguments[1],
+                        (Integer) arguments[2],
+                        (Boolean) arguments[3],
+                        arguments[4]);
+            case "getChildrenAndRolesRecursive":
+                return getChildrenAndRolesRecursive(defaultSupplier,
+                        (Accessible) arguments[0],
+                        (Component) arguments[1],
+                        (Integer) arguments[2],
+                        (Boolean) arguments[3],
+                        (Integer) arguments[4]);
+            case "getAccessibleCurrentAccessible":
+                return getAccessibleCurrentAccessible(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAccessibleComboboxValue":
+                return getAccessibleComboboxValue(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getCurrentAccessiblePopupMenu":
+                return getCurrentAccessiblePopupMenu(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getTableInfo":
+                return getTableInfo(defaultSupplier,
+                        (Accessible) arguments[0],
+                        (Component) arguments[1],
+                        (Integer) arguments[2]);
+            case "getTableSelectedInfo":
+                return getTableSelectedInfo(defaultSupplier,
+                        (Accessible) arguments[0],
+                        (Component) arguments[1],
+                        (Integer) arguments[2]);
+            case "getChildren":
+                return getChildren(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getAWTView":
+                return getAWTView(defaultSupplier,
+                        (Accessible) arguments[0]);
+            case "isTreeRootVisible":
+                return isTreeRootVisible(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+
+            // from CAccessibleText:
+            case "getAccessibleEditableText":
+                return getAccessibleEditableText(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getSelectedText":
+                return getSelectedText(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "setSelectedText":
+                setSelectedText(defaultRunnable,
+                        (Accessible) arguments[0],
+                        component,
+                        (String) arguments[1] );
+                return null;
+            case "setSelectedTextRange":
+                setSelectedTextRange(defaultRunnable,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1],
+                        (Integer) arguments[2] );
+                return null;
+            case "getTextRange":
+                return getTextRange(defaultSupplier,
+                        (AccessibleEditableText) arguments[0],
+                        (Integer) arguments[1],
+                        (Integer) arguments[2],
+                        component);
+            case "getCharacterIndexAtPosition":
+                return getCharacterIndexAtPosition(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1],
+                        (Integer) arguments[2] );
+            case "getSelectedTextRange":
+                return getSelectedTextRange(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getVisibleCharacterRange":
+                return getVisibleCharacterRange(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getLineNumberForIndex":
+                return getLineNumberForIndex(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1] );
+            case "getLineNumberForInsertionPoint":
+                return getLineNumberForInsertionPoint(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component);
+            case "getRangeForLine":
+                return getRangeForLine(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1] );
+            case "getRangeForIndex":
+                return getRangeForIndex(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1] );
+            case "getBoundsForRange":
+                return getBoundsForRange(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1],
+                        (Integer) arguments[2] );
+            case "getStringForRange":
+                return getStringForRange(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1],
+                        (Integer) arguments[2] );
+
+            default:
+                return RETURN_VALUE_UNSUPPORTED;
+        }
+    }
 
     public String getAccessibleActionDescription(Supplier<String> defaultImplementation, AccessibleAction aa, int index, Component c) {
         return defaultImplementation.get();
