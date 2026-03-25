@@ -243,7 +243,7 @@ public class CAccessibilityController {
                 }
 
                 // TODO remove, or make a log.debug notification
-                System.err.println("Warning: unrecognized \"" + method.getName() + "\"");
+                System.err.println("Warning: unrecognized \"" + method.getName() + "\", arguments = " + Arrays.asList(arguments));
             }
 
             // either we're out of handlers, or the method name isn't supported

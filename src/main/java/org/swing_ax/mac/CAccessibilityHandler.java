@@ -162,7 +162,17 @@ public abstract class CAccessibilityHandler {
                 return getInitialAttributeStates(defaultSupplier,
                         (Accessible) arguments[0],
                         component);
+            case "getChildrenAndRoles":
+                // this is observed up to Java 19
+                return invokeGetChildrenAndRoles(defaultSupplier,
+                        (Accessible) arguments[0],
+                        component,
+                        (Integer) arguments[1],
+                        (Boolean) arguments[2],
+                        null
+                        );
             case "invokeGetChildrenAndRoles":
+                // this is observed in Java 19+
                 return invokeGetChildrenAndRoles(defaultSupplier,
                         (Accessible) arguments[0],
                         (Component) arguments[1],
