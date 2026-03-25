@@ -9,25 +9,26 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class CAccessibilityController {
     private static final CAccessibilityController instance = new CAccessibilityController();
 
+    private static boolean isInitialized;
+
     public static void initialize() {
+        synchronized (CAccessibilityController.class) {
+            if (isInitialized)
+                return;
+            isInitialized = true;
+        }
+
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueue() {
             @Override
             protected void dispatchEvent(AWTEvent event) {
                 CAccessibilityController controller = CAccessibilityController.get();
-                if (controller.hasListeners()) {
-                    InvocationEventInfo invoInfo = controller.dispatchEvent(event);
-                    if (invoInfo != null) {
-                        if (!invoInfo.invocationEvent.isDispatched()) {
-                            super.dispatchEvent(invoInfo.invocationEvent);
-                        }
-                        controller.fireNotificationListeners(invoInfo);
-                        return;
-                    }
+                if (controller.dispatchEvent(event)) {
+                    return;
                 }
                 super.dispatchEvent(event);
             }
@@ -38,9 +39,9 @@ public class CAccessibilityController {
         return instance;
     }
 
-    boolean isInitialized;
-    static Field field_invocationEvent_runnable, field_callableWrapper_callable, field_callableWrapper_object;
-    static Method method_callableWrapper_getResult, method_caccessible_getSwingAccessible, method_invocationEvent_finishedDispatching;
+    boolean isConstructed;
+    static Field field_invocationEvent_runnable, field_callableWrapper_callable, field_callableWrapper_object, field_callableWrapper_e;
+    static Method method_caccessible_getSwingAccessible, method_invocationEvent_finishedDispatching, method_callableWrapper_getResult;
 
     private CAccessibilityController() {
         try {
@@ -50,15 +51,16 @@ public class CAccessibilityController {
             Class callableWrapperClass = Class.forName("sun.lwawt.macosx.LWCToolkit$CallableWrapper");
             field_callableWrapper_callable = getField(callableWrapperClass, "callable");
             field_callableWrapper_object = getField(callableWrapperClass, "object");
+            field_callableWrapper_e = getField(callableWrapperClass, "e");
+
             method_callableWrapper_getResult = getMethod(callableWrapperClass, "getResult");
 
             Class caccessibleClass = Class.forName("sun.lwawt.macosx.CAccessible");
             method_caccessible_getSwingAccessible = getMethod(caccessibleClass, "getSwingAccessible", Accessible.class);
 
-
             method_invocationEvent_finishedDispatching = getMethod(InvocationEvent.class, "finishedDispatching", Boolean.TYPE);
 
-            isInitialized = true;
+            isConstructed = true;
         } catch(Throwable t) {
             // try adding "--add-opens java.desktop/java.awt.event=ALL-UNNAMED --add-opens java.desktop/sun.lwawt.macosx=ALL-UNNAMED" to your VM arguments
             t.printStackTrace();
@@ -98,11 +100,10 @@ public class CAccessibilityController {
 //        return false;
 //    }
 
-    private InvocationEventInfo dispatchEvent(AWTEvent event) {
-        if (!isInitialized)
-            return null;
-        if (!(event instanceof InvocationEvent))
-            return null;
+    private boolean dispatchEvent(AWTEvent event) {
+        if (!isConstructed || !(event instanceof InvocationEvent) || handlers.isEmpty())
+            return false;
+
         InvocationEvent invocationEvent = (InvocationEvent) event;
         try {
             String paramString = event.paramString();
@@ -124,83 +125,44 @@ public class CAccessibilityController {
             }
 
             if (method != null) {
-                InvocationEventInfo invoInfo = new InvocationEventInfo(invocationEvent, method, runnable, callable);
-                RequestListener[] requestListenerArray = requestListeners.toArray(new RequestListener[0]);
-                for (RequestListener l : requestListenerArray) {
-                    MethodInvocationRequest r = new MethodInvocationRequest(invoInfo);
-                    l.request(r);
-                    if (r.isIntercepted())
-                        break;
-                }
-                return invoInfo;
+                Component comp = invocationEvent.getSource() instanceof Component ? (Component) invocationEvent.getSource() : null;
+                InvocationEventHelper invocationHelper = new InvocationEventHelper(invocationEvent, method, runnable, callable, comp, handlers.iterator());
+                invocationHelper.invokeMethod();
+                return true;
             }
         } catch(Throwable t) {
             t.printStackTrace();
         }
 
-        return null;
+        return false;
     }
 
-    private void fireNotificationListeners(InvocationEventInfo invoInfo) {
-        NotificationListener[] notificationListenersArray = notificationListeners.toArray(new NotificationListener[0]);
-        MethodInvocationNotification notification = new MethodInvocationNotification(invoInfo);
-        for (NotificationListener l : notificationListenersArray) {
-            l.notify(notification);
-        }
-    }
-
-    private static class InvocationEventInfo {
+    private static class InvocationEventHelper implements Supplier<Object>, Runnable {
         private final Method method;
         private final InvocationEvent invocationEvent;
         private final Runnable invocationEventRunnable;
         private final Callable<?> runnableCallable;
-
-        private Object returnValue;
-        private boolean isReturnValueDefined;
-
-        private Map<String, Object> arguments;
-        private boolean isIntercepted;
+        private final Iterator<CAccessibilityHandler> handlerIterator;
+        private final Component component;
+        private final Object[] arguments;
+        private Object originalResult;
 
         /**
          * @param runnableCallable this may be null, depending on whether the Runnable is a plain
          *                                Runnable (like when you request the focus), or if it's a
          *                                LWCToolkit$CallableWrapper (like when you need a return value)
          */
-        private InvocationEventInfo(InvocationEvent invocationEvent, Method method,
-                                    Runnable invocationEventRunnable, Callable<?> runnableCallable) {
+        private InvocationEventHelper(InvocationEvent invocationEvent, Method method,
+                                      Runnable invocationEventRunnable, Callable<?> runnableCallable,
+                                      Component component,
+                                      Iterator<CAccessibilityHandler> handlerIterator) {
             this.method = Objects.requireNonNull(method);
             this.invocationEvent = Objects.requireNonNull(invocationEvent);
             this.invocationEventRunnable = Objects.requireNonNull(invocationEventRunnable);
             this.runnableCallable = runnableCallable;
-        }
-
-        /**
-         * Return the return value of the InvocationEvent if the invocation event represents a Callable.
-         *
-         * If the InvocationEvent is simply a Runnable, then this returns null.
-         *
-         * This will throw an IllegalStateException if you call it before {@link InvocationEvent#isDispatched()} returns true.
-         */
-        Object getReturnValue() throws Exception {
-            if (!invocationEvent.isDispatched())
-                throw new IllegalStateException("InvocationEvent.isDispatched() is false; this method should only be called after dispatching the event.");
-
-            if (!isReturnValueDefined) {
-                if (runnableCallable == null) {
-                    // there's no return value here
-                    returnValue = null;
-                } else {
-                    try {
-                        returnValue = method_callableWrapper_getResult.invoke(invocationEventRunnable);
-
-                        returnValue = unwrap(returnValue);
-                    } catch(InvocationTargetException e) {
-                        throw (Exception) e.getTargetException();
-                    }
-                }
-                isReturnValueDefined = true;
-            }
-            return returnValue;
+            this.handlerIterator = handlerIterator;
+            this.component = component;
+            arguments = createArgumentArray();
         }
 
         private Object unwrap(Object obj) throws InvocationTargetException, IllegalAccessException {
@@ -210,203 +172,377 @@ public class CAccessibilityController {
             return obj;
         }
 
-        Map<String, Object> getArguments() {
-            if (arguments == null) {
-                Object caccessibleObj = runnableCallable != null ? runnableCallable : invocationEventRunnable;
+        Object[] createArgumentArray() {
+            Object caccessibleObj = runnableCallable != null ? runnableCallable : invocationEventRunnable;
 
-                Field[] fields = caccessibleObj.getClass().getDeclaredFields();
-                try {
-                    Map<String, Object> m = new LinkedHashMap<>();
-                    for (Field field : fields) {
-                        field.setAccessible(true);
-                        Object obj = field.get(caccessibleObj);
-                        String name = field.getName();
-                        if (name.startsWith("val$")) {
-                            name = name.substring(4);
-                            obj = unwrap(obj);
-                            m.put(name, obj);
-                        }
-                    }
-                    // only assign after we're sure there are no exceptions
-                    arguments = m;
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(e);
-                }
-            }
-
-            if (arguments == null)
-                return Collections.emptyMap();
-
-            return Collections.unmodifiableMap(arguments);
-        }
-
-        void intercept(Object returnValue) {
-            // bounds check:
-            if (method.getReturnType() == Void.class) {
-                if (returnValue != null)
-                    throw new IllegalArgumentException("The method " + method.getName() + " does not return a value; so we can't intercept it and return " + returnValue.getClass().getName());
-            } else {
-                if ( !(method.getReturnType().isInstance(returnValue) || (returnValue == null && !method.getReturnType().isPrimitive())))
-                    throw new IllegalArgumentException("The method " + method.getName() + " expects a " + method.getReturnType().getName() + ", not " +
-                            (returnValue == null ? "null" : "a " + returnValue.getClass().getName()));
-            }
-
+            Field[] fields = caccessibleObj.getClass().getDeclaredFields();
             try {
-                if (runnableCallable != null) {
-                    field_callableWrapper_object.set(invocationEventRunnable, returnValue);
+                List<Object> returnValue = new ArrayList<>(fields.length);
+                for (Field field : fields) {
+                    field.setAccessible(true);
+                    Object obj = field.get(caccessibleObj);
+                    String name = field.getName();
+                    if (name.startsWith("val$")) {
+                        name = name.substring(4);
+                        obj = unwrap(obj);
+                        returnValue.add(obj);
+                    }
                 }
-                if (!invocationEvent.isDispatched())
-                    method_invocationEvent_finishedDispatching.invoke(invocationEvent, Boolean.TRUE);
-                isIntercepted = true;
-
-                this.returnValue = returnValue;
-                isReturnValueDefined = true;
-            } catch(Throwable t) {
-                throw new RuntimeException(t);
+                return returnValue.toArray(new Object[0]);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
             }
         }
 
-        boolean isIntercepted() {
-            return isIntercepted;
-        }
-
-        void filter(Function returnValueFilter) {
-            if (!isReturnValueDefined) {
-                if (!invocationEvent.isDispatched()) {
-                    invocationEvent.dispatch();
-                }
+        void invokeMethod() {
+            Object returnValue = null;
+            try {
                 try {
-                    getReturnValue();
-                } catch(Throwable t) {
-                    throw new RuntimeException(t);
+                    returnValue = get();
+                } catch (Exception e) {
+                    // TODO: remove
+                    e.printStackTrace();
+                    if (runnableCallable != null) {
+                        field_callableWrapper_e.set(invocationEventRunnable, e);
+                    } else {
+                        // TODO
+                    }
+                } catch (Throwable t) {
+                    // TODO: remove
+                    t.printStackTrace();
+                    if (runnableCallable != null) {
+                        // TODO
+                    } else {
+                        // TODO
+                    }
+                } finally {
+                    if (runnableCallable != null && returnValue != originalResult) {
+                        field_callableWrapper_object.set(runnableCallable, returnValue);
+                    }
+                    if (!invocationEvent.isDispatched())
+                        method_invocationEvent_finishedDispatching.invoke(invocationEvent, Boolean.TRUE);
                 }
+            } catch(InvocationTargetException | IllegalAccessException e) {
+                // this shouldn't happen
+                throw new RuntimeException(e);
             }
-
-            returnValue = returnValueFilter.apply(returnValue);
-            intercept(returnValue);
-        }
-    }
-
-    public static class MethodInvocationRequest {
-        private final InvocationEventInfo invoInfo;
-
-        protected MethodInvocationRequest(InvocationEventInfo invoInfo) {
-            this.invoInfo = Objects.requireNonNull(invoInfo);
-        }
-
-        public Map<String, Object> getArguments() {
-            return invoInfo.getArguments();
-        }
-
-        public void intercept(Object returnValue) {
-            invoInfo.intercept(returnValue);
-        }
-
-        public boolean isIntercepted() {
-            return invoInfo.isIntercepted();
-        }
-
-        public Method getMethod() {
-            return invoInfo.method;
-        }
-
-        public Object getArgument(int argIndex) {
-            return getArguments().values().toArray(new Object[0])[argIndex];
-        }
-
-        /**
-         * Filter the current return value and call {@link #intercept(Object)} to replace it.
-         * <p>
-         * If no return value has been injected yet, then this method will
-         * call {@link InvocationEvent#dispatch()} to derive the default return value before
-         * modifying ig.
-         * </p>
-         */
-        public void filter(Function<Object[], Object[]> returnValueFilter) {
-            invoInfo.filter(returnValueFilter);
         }
 
         @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(invoInfo.method.getName());
-            sb.append("(");
-            Object[] args = getArguments().values().toArray(new Object[0]);
-            for (int a = 0; a < args.length; a++) {
-                if (a != 0) {
-                    sb.append(", ");
+        public void run() {
+            get();
+        }
+
+        @Override
+        public Object get() {
+            if (handlerIterator.hasNext()) {
+                CAccessibilityHandler h = handlerIterator.next();
+                switch (method.getName()) {
+                    case "getAccessibleActionDescription":
+                        return h.getAccessibleActionDescription((Supplier) this,
+                                (AccessibleAction) arguments[0],
+                                (Integer) arguments[1],
+                                component);
+                    case "doAccessibleAction":
+                        h.doAccessibleAction(this,
+                                (AccessibleAction) arguments[0],
+                                (Integer) arguments[1],
+                                component);
+                        return null;
+                    case "getSize":
+                        return h.getSize((Supplier) this,
+                                (AccessibleComponent) arguments[0],
+                                component);
+                    case "getAccessibleSelection":
+                        return h.getAccessibleSelection((Supplier) this,
+                                (AccessibleContext) arguments[0],
+                                component);
+                    case "ax_getAccessibleSelection":
+                        return h.ax_getAccessibleSelection((Supplier) this,
+                                (AccessibleContext) arguments[0],
+                                (Integer) arguments[1],
+                                component);
+                    case "addAccessibleSelection":
+                        h.addAccessibleSelection(this,
+                                (AccessibleContext) arguments[0],
+                                (Integer) arguments[1],
+                                component);
+                        return null;
+                    case "getAccessibleContext":
+                        return h.getAccessibleContext((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "isAccessibleChildSelected":
+                        return h.isAccessibleChildSelected((Supplier) this,
+                                (Accessible) arguments[0],
+                                (Integer) arguments[1],
+                                component);
+                    case "getAccessibleStateSet":
+                        return h.getAccessibleStateSet((Supplier) this,
+                                (AccessibleContext) arguments[0],
+                                component);
+                    case "contains":
+                        return h.contains((Supplier) this,
+                                (AccessibleContext) arguments[0],
+                                (AccessibleState) arguments[1],
+                                component);
+                    case "getAccessibleRole":
+                        return h.getAccessibleRole((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getLocationOnScreen":
+                        return h.getLocationOnScreen((Supplier) this,
+                                (AccessibleComponent) arguments[0],
+                                component);
+                    case "getCharCount":
+                        return h.getCharCount((Supplier) this,
+                                (AccessibleText) arguments[0],
+                                component);
+                    case "getAccessibleParent":
+                        return h.getAccessibleParent((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleIndexInParent":
+                        return h.getAccessibleIndexInParent((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleComponent":
+                        return h.getAccessibleComponent((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleValue":
+                        return h.getAccessibleValue((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleName":
+                        return h.getAccessibleName((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleText":
+                        return h.getAccessibleText((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleDescription":
+                        return h.getAccessibleDescription((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "isFocusTraversable":
+                        return h.isFocusTraversable((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "accessibilityHitTest":
+                        return h.accessibilityHitTest((Supplier) this,
+                                (Container) arguments[0],
+                                (Float) arguments[1],
+                                (Float) arguments[2]);
+                    case "getAccessibleAction":
+                        return h.getAccessibleAction((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    // TODO: reevaluate getAccessibleActionCount (lambdas are a different case)
+                    case "isEnabled":
+                        return h.isEnabled((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "requestFocus":
+                        h.requestFocus(this,
+                                (Accessible) arguments[0],
+                                component);
+                        return null;
+                    case "requestSelection":
+                        h.requestSelection(this,
+                                (Accessible) arguments[0],
+                                component);
+                        return null;
+                    case "getMaximumAccessibleValue":
+                        return h.getMaximumAccessibleValue((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getMinimumAccessibleValue":
+                        return h.getMinimumAccessibleValue((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleRoleDisplayString":
+                        return h.getAccessibleRoleDisplayString((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getCurrentAccessibleValue":
+                        return h.getCurrentAccessibleValue((Supplier) this,
+                                (AccessibleValue) arguments[0],
+                                component);
+                    case "getFocusOwner":
+                        return h.getFocusOwner((Supplier) this,
+                                component);
+                    case "getInitialAttributeStates":
+                        return h.getInitialAttributeStates((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "invokeGetChildrenAndRoles":
+                        return h.invokeGetChildrenAndRoles((Supplier) this,
+                                (Accessible) arguments[0],
+                                (Component) arguments[1],
+                                (Integer) arguments[2],
+                                (Boolean) arguments[3],
+                                arguments[4]);
+                    case "getChildrenAndRolesRecursive":
+                        return h.getChildrenAndRolesRecursive((Supplier) this,
+                                (Accessible) arguments[0],
+                                (Component) arguments[1],
+                                (Integer) arguments[2],
+                                (Boolean) arguments[3],
+                                (Integer) arguments[4]);
+                    case "getAccessibleCurrentAccessible":
+                        return h.getAccessibleCurrentAccessible((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAccessibleComboboxValue":
+                        return h.getAccessibleComboboxValue((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getCurrentAccessiblePopupMenu":
+                        return h.getCurrentAccessiblePopupMenu((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getTableInfo":
+                        return h.getTableInfo((Supplier) this,
+                                (Accessible) arguments[0],
+                                (Component) arguments[1],
+                                (Integer) arguments[2]);
+                    case "getTableSelectedInfo":
+                        return h.getTableSelectedInfo((Supplier) this,
+                                (Accessible) arguments[0],
+                                (Component) arguments[1],
+                                (Integer) arguments[2]);
+                    case "getChildren":
+                        return h.getChildren((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getAWTView":
+                        return h.getAWTView((Supplier) this,
+                                (Accessible) arguments[0]);
+                    case "isTreeRootVisible":
+                        return h.isTreeRootVisible((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+
+                    // from CAccessibleText:
+                    case "getAccessibleEditableText":
+                        return h.getAccessibleEditableText((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getSelectedText":
+                        return h.getSelectedText((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "setSelectedText":
+                        h.setSelectedText(this,
+                                (Accessible) arguments[0],
+                                component,
+                                (String) arguments[1] );
+                        return null;
+                    case "setSelectedTextRange":
+                        h.setSelectedTextRange(this,
+                                (Accessible) arguments[0],
+                                component,
+                                (Integer) arguments[1],
+                                (Integer) arguments[2] );
+                        return null;
+                    case "getTextRange":
+                        return h.getTextRange((Supplier) this,
+                                (AccessibleEditableText) arguments[0],
+                                (Integer) arguments[1],
+                                (Integer) arguments[2],
+                                component);
+                    case "getCharacterIndexAtPosition":
+                        return h.getCharacterIndexAtPosition((Supplier) this,
+                                (Accessible) arguments[0],
+                                component,
+                                (Integer) arguments[1],
+                                (Integer) arguments[2] );
+                    case "getSelectedTextRange":
+                        return h.getSelectedTextRange((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getVisibleCharacterRange":
+                        return h.getVisibleCharacterRange((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getLineNumberForIndex":
+                        return h.getLineNumberForIndex((Supplier) this,
+                                (Accessible) arguments[0],
+                                component,
+                                (Integer) arguments[1] );
+                    case "getLineNumberForInsertionPoint":
+                        return h.getLineNumberForInsertionPoint((Supplier) this,
+                                (Accessible) arguments[0],
+                                component);
+                    case "getRangeForLine":
+                        return h.getRangeForLine((Supplier) this,
+                                (Accessible) arguments[0],
+                                component,
+                                (Integer) arguments[1] );
+                    case "getRangeForIndex":
+                        return h.getRangeForIndex((Supplier) this,
+                                (Accessible) arguments[0],
+                                component,
+                                (Integer) arguments[1] );
+                    case "getBoundsForRange":
+                        return h.getBoundsForRange((Supplier) this,
+                                (Accessible) arguments[0],
+                                component,
+                                (Integer) arguments[1],
+                                (Integer) arguments[2] );
+                    case "getStringForRange":
+                        return h.getStringForRange((Supplier) this,
+                                (Accessible) arguments[0],
+                                component,
+                                (Integer) arguments[1],
+                                (Integer) arguments[2] );
+
+                    default:
+                        // TODO remove, or make a log.debug notification
+                        System.err.println("Warning: unrecognized \"" + method.getName() + "\"");
                 }
-                sb.append(args[a]);
             }
-            sb.append(")");
-            return sb.toString();
+
+            // either we're out of handlers, or the method name isn't supported
+
+            invocationEvent.dispatch();
+            if (invocationEvent.getThrowable() != null) {
+                if (invocationEvent.getThrowable() instanceof RuntimeException)
+                    throw (RuntimeException) invocationEvent.getThrowable();
+                if (invocationEvent.getThrowable() instanceof Error)
+                    throw (Error) invocationEvent.getThrowable();
+                throw new RuntimeException(invocationEvent.getThrowable());
+            }
+
+            if (runnableCallable != null) {
+                try {
+                    originalResult = method_callableWrapper_getResult.invoke(invocationEventRunnable);
+                } catch (IllegalAccessException e) {
+                    // this shouldn't happen:
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    // we shouldn't reach this line. If there was an exception, then we should
+                    // have handled it above when we checked invocationEvent.getThrowable()
+                    throw new RuntimeException(e);
+                }
+                return originalResult;
+            }
+            return null;
         }
     }
 
-    public static class MethodInvocationNotification {
-        private final InvocationEventInfo invoInfo;
+    private List<CAccessibilityHandler> handlers = new LinkedList<>();
 
-        protected MethodInvocationNotification(InvocationEventInfo invoInfo) {
-            this.invoInfo = Objects.requireNonNull(invoInfo);
-        }
-
-        public Method getMethod() {
-            return invoInfo.method;
-        }
-
-        public Object getReturnValue() throws Exception {
-            return invoInfo.getReturnValue();
-        }
-
-        public boolean isIntercepted() {
-            return invoInfo.isIntercepted();
-        }
-
-        public Map<String, Object> getArguments() {
-            return invoInfo.getArguments();
-        }
-
-        public Object getArgument(int argIndex) {
-            return getArguments().values().toArray(new Object[0])[argIndex];
-        }
+    public void addHandler(CAccessibilityHandler listener) {
+        if (listener == null)
+            return;
+        initialize();
+        handlers.add(0, listener);
     }
 
-    /**
-     * This listener is notified when CAccessibility requests something. This listener
-     * has the opportunity to intercept (hijack) the request.
-     */
-    public interface RequestListener {
-        void request(MethodInvocationRequest r);
-    }
-
-    /**
-     * This listener is notified when CAccessibility finished a request. This
-     * listener may inspect the return value, but it cannot change it.
-     */
-    public interface NotificationListener {
-        void notify(MethodInvocationNotification notification);
-    }
-
-    private List<RequestListener> requestListeners = new LinkedList<>();
-    private List<NotificationListener> notificationListeners = new LinkedList<>();
-
-    public void addRequestListener(RequestListener listener) {
-        requestListeners.add(listener);
-    }
-
-    public void removeRequestListener(RequestListener listener) {
-        requestListeners.remove(listener);
-    }
-
-    public void addNotificationListener(NotificationListener listener) {
-        notificationListeners.add(listener);
-    }
-
-    public void removeNotificationListener(NotificationListener listener) {
-        notificationListeners.remove(listener);
-    }
-
-    private boolean hasListeners() {
-        return !(notificationListeners.isEmpty() && requestListeners.isEmpty());
+    public void removeHandler(CAccessibilityHandler listener) {
+        handlers.remove(listener);
     }
 }

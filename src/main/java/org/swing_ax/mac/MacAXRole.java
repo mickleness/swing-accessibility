@@ -1,37 +1,54 @@
 package org.swing_ax.mac;
 
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleRole;
 import javax.swing.*;
+import java.awt.*;
+import java.util.function.Supplier;
 
 public class MacAXRole extends AccessibleRole {
 
-    public static final Object PROPERTY_MAC_AX_ROLE = "MacAXRole";
+    public static final Object PROPERTY_ACCESSIBLE_ROLE = "ClientAccessibleRole";
 
     static {
-        CAccessibilityController.get().addRequestListener(new CAccessibilityController.RequestListener() {
+        CAccessibilityController.get().addHandler(new CAccessibilityHandler() {
             @Override
-            public void request(CAccessibilityController.MethodInvocationRequest r) {
-                if (r.getMethod().getName().equals("getAccessibleRole") &&
-                        r.getArgument(0) instanceof JComponent) {
-                    JComponent jc = (JComponent) r.getArgument(0);
-                    MacAXRole macAXRole = (MacAXRole) jc.getClientProperty(PROPERTY_MAC_AX_ROLE);
-                    if (macAXRole != null)
-                        r.intercept(macAXRole.getKey());
-                } else if (r.getMethod().getName().equals("invokeGetChildrenAndRoles")) {
-                    r.filter(objects -> {
-                        for (int a = 0; a < objects.length; a++) {
-                            if (objects[a] instanceof JComponent &&
-                                    a + 1 < objects.length &&
-                                    objects[a + 1] instanceof AccessibleRole) {
-                                JComponent jc = (JComponent) objects[a];
-                                MacAXRole macAXRole = (MacAXRole) jc.getClientProperty(PROPERTY_MAC_AX_ROLE);
-                                if (macAXRole != null)
-                                    objects[a + 1] =  macAXRole;
-                            }
-                        }
-                        return objects;
-                    });
+            public String getAccessibleRole(Supplier<String> defaultImplementation, Accessible a, Component c) {
+                AccessibleRole clientRole = getClientAccessibleRole(c);
+                if (clientRole != null) {
+                    // TODO: get key from AccessibleRole (do NOT return localized toString())
+                    return clientRole.toString();
                 }
+                return super.getAccessibleRole(defaultImplementation, a, c);
+            }
+
+            @Override
+            public Object[] invokeGetChildrenAndRoles(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, Object ops) {
+                Object[] returnValue = super.invokeGetChildrenAndRoles(defaultImplementation, a, c, whichChildren, allowIgnored, ops);
+                for (int i = 0; i < returnValue.length; i++) {
+                    if (returnValue[i] instanceof Component &&
+                            i + 1 < returnValue.length &&
+                            returnValue[i + 1] instanceof AccessibleRole) {
+                        Component comp = (Component) returnValue[i];
+                        AccessibleRole clientRole = getClientAccessibleRole(comp);
+                        if (clientRole != null)
+                            returnValue[i + 1] = clientRole;
+                    }
+                }
+                return returnValue;
+            }
+
+            /**
+             * Return the AccessibleRole based on {@link MacAXRole#PROPERTY_ACCESSIBLE_ROLE}, or null if it is not defined
+             */
+            private AccessibleRole getClientAccessibleRole(Component c) {
+                if (c instanceof JComponent) {
+                    JComponent jc = (JComponent) c;
+                    AccessibleRole axRole = (AccessibleRole) jc.getClientProperty(PROPERTY_ACCESSIBLE_ROLE);
+                    if (axRole != null)
+                        return axRole;
+                }
+                return null;
             }
         });
     }

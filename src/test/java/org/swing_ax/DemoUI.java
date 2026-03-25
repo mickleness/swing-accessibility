@@ -1,8 +1,6 @@
 package org.swing_ax;
 
-import org.swing_ax.mac.CAccessibilityController;
-import org.swing_ax.mac.MacAXRole;
-import org.swing_ax.mac.TransparentPopupFactory;
+import org.swing_ax.mac.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,27 +24,6 @@ public class DemoUI extends JFrame {
                 DemoUI d = new DemoUI();
                 d.pack();
                 d.setVisible(true);
-            }
-        });
-    }
-
-    static {
-        CAccessibilityController.get().addNotificationListener(new CAccessibilityController.NotificationListener() {
-            @Override
-            public void notify(CAccessibilityController.MethodInvocationNotification notification) {
-                try {
-                    Object returnValue = notification.getReturnValue();
-                    if (returnValue instanceof Object[]) {
-                        Object[] array = (Object[]) returnValue;
-                        returnValue = Arrays.asList(array);
-                    }
-                    System.out.println(notification.getMethod() + " -> " + returnValue);
-                    for (Map.Entry<String, Object> e : notification.getArguments().entrySet()) {
-                        System.out.println("\t" + e.getKey() + " = " + e.getValue());
-                    }
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
             }
         });
     }
@@ -78,7 +55,7 @@ public class DemoUI extends JFrame {
 
         JButton postSecret = new JButton("<html><u>postsecret.com</u></html>");
         postSecret.setBorderPainted(false);
-        postSecret.putClientProperty(MacAXRole.PROPERTY_MAC_AX_ROLE, MacAXRole.AXLink);
+        postSecret.putClientProperty(MacAXRole.PROPERTY_ACCESSIBLE_ROLE, MacAXRole.AXLink);
         postSecret.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         postSecret.addActionListener(e -> {
             try {
@@ -151,6 +128,6 @@ public class DemoUI extends JFrame {
 //        });
 //        animatorTimer.start();
 
-        CAccessibilityController.initialize();
+        CAccessibilityController.get().addHandler(new DefaultCAccessibilityHandler());
     }
 }
