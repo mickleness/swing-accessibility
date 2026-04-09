@@ -1,8 +1,12 @@
 package org.swing_ax.mac;
 
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Supplier;
@@ -37,6 +41,20 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
             @Override
             public boolean isReproducible() {
                 return javaVersion >= 17 && javaVersion < 27;
+            }
+        },
+
+        /**
+         * When the current focus owner lost focus: VoiceOver would mistakenly issue a
+         * valueChanged notification. As a result: the keyboard focus moved from
+         * component A to B, but VoiceOver may try to re-announce a description of component A.
+         *
+         * {@see <a href="https://bugs.openjdk.org/browse/JDK-8377936">JDK-8377936</a>
+         */
+        BUG_FIX_DONT_ANNOUNCE_VALUE_CHANGE_FOR_LOST_FOCUS() {
+            @Override
+            public boolean isReproducible() {
+                return javaVersion >= 14 && javaVersion < 27;
             }
         };
 
@@ -73,5 +91,44 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
         }
 
         return super.invoke(method, defaultSupplier, defaultRunnable, component, arguments);
+    }
+
+    @Override
+    public void requestFocus(Runnable defaultImplementation, Accessible a, Component c) {
+        if (activeFeatures.contains(Feature.BUG_FIX_DONT_ANNOUNCE_VALUE_CHANGE_FOR_LOST_FOCUS)) {
+            // normally (without this intervention) CAccessible's AXChangeNotifier will receive
+            // a AccessibleStateSet notification when the current focus owner loses the keyboard focus.
+            // As a result, it will fire a CAccessible.valueChanged message. VoiceOver ends up reading
+            // the prev focus owner's description, as if the user meant to interact with it.
+
+            // so to avoid this: we'll temporarily remove the FocusListener that updates AXChangeNotifier.
+            Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+            AccessibleRole focusOwnerRole = focusOwner == null ? null : focusOwner.getAccessibleContext().getAccessibleRole();
+            boolean isToggle = focusOwnerRole == AccessibleRole.TOGGLE_BUTTON ||
+                    focusOwnerRole == AccessibleRole.RADIO_BUTTON ||
+                    focusOwnerRole == AccessibleRole.CHECK_BOX;
+            if (isToggle) {
+                FocusListener[] listeners = focusOwner.getFocusListeners();
+                for (FocusListener listener : listeners) {
+                    if (listener.getClass().getName().equals("java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler")) {
+                        focusOwner.removeFocusListener(listener);
+                        focusOwner.addFocusListener(new FocusListener() {
+                            @Override
+                            public void focusGained(FocusEvent e) {
+                                focusOwner.addFocusListener(listener);
+                                focusOwner.removeFocusListener(this);
+                            }
+
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                focusGained(e);
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+        }
+        super.requestFocus(defaultImplementation, a, c);
     }
 }
