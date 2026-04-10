@@ -217,7 +217,7 @@ public class CAccessibilityController {
                     }
                 } finally {
                     if (runnableCallable != null && returnValue != originalResult) {
-                        field_callableWrapper_object.set(runnableCallable, returnValue);
+                        field_callableWrapper_object.set(invocationEventRunnable, returnValue);
                     }
                     if (!invocationEvent.isDispatched())
                         method_invocationEvent_finishedDispatching.invoke(invocationEvent, Boolean.TRUE);
