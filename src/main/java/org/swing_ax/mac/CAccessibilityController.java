@@ -41,7 +41,8 @@ public class CAccessibilityController {
 
     boolean isConstructed;
     static Field field_invocationEvent_runnable, field_callableWrapper_callable, field_callableWrapper_object, field_callableWrapper_e;
-    static Method method_caccessible_getSwingAccessible, method_invocationEvent_finishedDispatching, method_callableWrapper_getResult;
+    static Method method_caccessible_getSwingAccessible, method_caccessible_getCAccessible, method_invocationEvent_finishedDispatching, method_callableWrapper_getResult;
+    static Class caccessibleClass;
 
     private CAccessibilityController() {
         try {
@@ -55,8 +56,9 @@ public class CAccessibilityController {
 
             method_callableWrapper_getResult = getMethod(callableWrapperClass, "getResult");
 
-            Class caccessibleClass = Class.forName("sun.lwawt.macosx.CAccessible");
+            caccessibleClass = Class.forName("sun.lwawt.macosx.CAccessible");
             method_caccessible_getSwingAccessible = getMethod(caccessibleClass, "getSwingAccessible", Accessible.class);
+            method_caccessible_getCAccessible = getMethod(caccessibleClass, "getCAccessible", Accessible.class);
 
             method_invocationEvent_finishedDispatching = getMethod(InvocationEvent.class, "finishedDispatching", Boolean.TYPE);
 
@@ -165,9 +167,33 @@ public class CAccessibilityController {
             arguments = createArgumentArray();
         }
 
-        private Object unwrap(Object obj) throws InvocationTargetException, IllegalAccessException {
-            if (obj != null && "sun.lwawt.macosx.CAccessible".equals(obj.getClass().getName())) {
+        private Object convertFromCAccessibleValue(Object obj) throws InvocationTargetException, IllegalAccessException {
+            if (caccessibleClass.isInstance(obj)) {
                 obj = method_caccessible_getSwingAccessible.invoke(null, obj);
+            }
+            return obj;
+        }
+
+        static Map<Method, Boolean> isMethodExpectingCAccessibleValue = new HashMap<>();
+        private boolean shouldMethodReturnValueBeCAccessible() {
+            // always check with a real-world example, if we can:
+            if (originalResult != null)
+                isMethodExpectingCAccessibleValue.put(method, caccessibleClass.isInstance(originalResult));
+            Boolean b = isMethodExpectingCAccessibleValue.get(method);
+            if (b != null)
+                return b;
+
+            // let's hope the methods / method names haven't changed over time:
+            if (method.getName().equals("getFocusOwner") ||
+                    method.getName().equals("accessibilityHitTest"))
+                return true;
+
+            return false;
+        }
+
+        private Object convertToCAccessibleValue(Object obj) throws InvocationTargetException, IllegalAccessException {
+            if (obj instanceof Accessible && !caccessibleClass.isInstance(obj)) {
+                obj = method_caccessible_getCAccessible.invoke(null, obj);
             }
             return obj;
         }
@@ -183,8 +209,7 @@ public class CAccessibilityController {
                     Object obj = field.get(caccessibleObj);
                     String name = field.getName();
                     if (name.startsWith("val$")) {
-                        name = name.substring(4);
-                        obj = unwrap(obj);
+                        obj = convertFromCAccessibleValue(obj);
                         returnValue.add(obj);
                     }
                 }
@@ -199,6 +224,8 @@ public class CAccessibilityController {
             try {
                 try {
                     returnValue = get();
+                    if (shouldMethodReturnValueBeCAccessible())
+                        returnValue = convertToCAccessibleValue(returnValue);
                 } catch (Exception e) {
                     // TODO: remove
                     e.printStackTrace();
@@ -260,6 +287,7 @@ public class CAccessibilityController {
             if (runnableCallable != null) {
                 try {
                     originalResult = method_callableWrapper_getResult.invoke(invocationEventRunnable);
+                    return convertFromCAccessibleValue(originalResult);
                 } catch (IllegalAccessException e) {
                     // this shouldn't happen:
                     throw new RuntimeException(e);
@@ -268,7 +296,6 @@ public class CAccessibilityController {
                     // have handled it above when we checked invocationEvent.getThrowable()
                     throw new RuntimeException(e);
                 }
-                return originalResult;
             }
             return null;
         }

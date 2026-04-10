@@ -10,7 +10,11 @@ import java.util.function.Supplier;
  * <p>
  * By default every method simply calls <code>defaultImplementation.get()</code> or <code>defaultImplementation.run()</code>,
  * but subclasses can override any method and either ignore `defaultImplementation` or modify/filter its return value.
- * </p>
+ * <p>
+ * Some methods in CAccessibility may expect a CAccessible object as an argument,
+ * or they may return a CAccessible object. This handler should assume it never
+ * interacts with a CAccessible object: the CAccessibilityController class will
+ * convert arguments and return values as needed automatically.
  */
 public abstract class CAccessibilityHandler {
 
