@@ -288,11 +288,17 @@ public abstract class CAccessibilityHandler {
                         component,
                         (Integer) arguments[1] );
             case "getBoundsForRange":
-                return getBoundsForRange(defaultSupplier,
-                        (Accessible) arguments[0],
-                        component,
-                        (Integer) arguments[1],
-                        (Integer) arguments[2] );
+                // CAccessibleText.getBoundsForRange is the only method in that
+                // class that creates a final field before calling invokeAndWait.
+                // That final field is visible here as `arguments[1]`.
+                double[] returnValue = getBoundsForRange(defaultSupplier,
+                            (Accessible) arguments[0],
+                            component,
+                            (Integer) arguments[2],
+                            (Integer) arguments[3]);
+                double[] destArray = (double[]) arguments[1];
+                System.arraycopy(returnValue, 0, destArray, 0, 4);
+                return destArray;
             case "getStringForRange":
                 return getStringForRange(defaultSupplier,
                         (Accessible) arguments[0],
