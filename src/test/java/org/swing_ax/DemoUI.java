@@ -55,7 +55,8 @@ public class DemoUI extends JFrame {
 
         JButton postSecret = new JButton("<html><u>postsecret.com</u></html>");
         postSecret.setBorderPainted(false);
-        postSecret.putClientProperty(MacAXRole.PROPERTY_ACCESSIBLE_ROLE, MacAXRole.AXLink);
+        postSecret.putClientProperty(DefaultCAccessibilityHandler.PROPERTY_ACCESSIBLE_ROLE, MacAXRole.AXLink);
+        // postSecret.putClientProperty(DefaultCAccessibilityHandler.PROPERTY_ACCESSIBLE_ROLE, AccessibleRole.HYPERLINK);
         postSecret.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         postSecret.addActionListener(e -> {
             try {

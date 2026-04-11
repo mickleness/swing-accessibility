@@ -1,9 +1,12 @@
 package org.swing_ax.mac;
 
+import org.swing_ax.AccessibleRoleUtils;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -14,6 +17,11 @@ import java.util.function.Supplier;
 public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
 
     public static final float javaVersion = getJavaVersionAsFloat();
+
+    /**
+     * This client property on a JComponent should resolve to an AccessibleRole.
+     */
+    public static final String PROPERTY_ACCESSIBLE_ROLE = "accessible role";
 
     private static float getJavaVersionAsFloat() {
         String version = System.getProperty("java.version");
@@ -39,7 +47,7 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
          */
         BUG_FIX_DO_ACCESSIBLE_ACTION_ARGUMENT_CORRECTION() {
             @Override
-            public boolean isReproducible() {
+            public boolean isRelevant() {
                 return javaVersion >= 17 && javaVersion < 27;
             }
         },
@@ -53,19 +61,30 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
          */
         BUG_FIX_DONT_ANNOUNCE_VALUE_CHANGE_FOR_LOST_FOCUS() {
             @Override
-            public boolean isReproducible() {
+            public boolean isRelevant() {
                 return javaVersion >= 14 && javaVersion < 27;
+            }
+        },
+
+        FEATURE_SUPPORT_ROLE_AS_CLIENT_PROPERTY() {
+            @Override
+            public boolean isRelevant() {
+                return true;
             }
         };
 
-        public abstract boolean isReproducible();
+        /**
+         * Return true if this Feature is probably useful in the current JVM.
+         * Some Features return false based on the JDK version.
+         */
+        public abstract boolean isRelevant();
     }
 
     Set<Feature> activeFeatures = new HashSet<>();
 
     public DefaultCAccessibilityHandler() {
         for (Feature f : Feature.values()) {
-            if (f.isReproducible())
+            if (f.isRelevant())
                 addFeature(f);
         }
         System.out.println("DefaultCAccessibilityHandler active features for JDK version " + javaVersion + ": " + activeFeatures);
@@ -130,5 +149,62 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
             }
         }
         super.requestFocus(defaultImplementation, a, c);
+    }
+
+    @Override
+    public String getAccessibleRole(Supplier<String> defaultImplementation, Accessible a, Component c) {
+        if (a instanceof JComponent) {
+            JComponent jc = (JComponent) a;
+            AccessibleRole returnValue = getCustomClientAccessibleRole(jc);
+            if (returnValue instanceof MacAXRole) {
+                return ((MacAXRole)returnValue).getKey();
+            } else if (returnValue != null) {
+                String key = AccessibleRoleUtils.getKey(returnValue);
+                if (key != null)
+                    return key;
+                // TODO: improve logging
+                System.err.println("getAccessibleRole identified " + returnValue + " but could not identify its key");
+            }
+        }
+        return super.getAccessibleRole(defaultImplementation, a, c);
+    }
+
+    /**
+     * Return the AccessibleRole a Component should use if
+     * it has a defined PROPERTY_ACCESSIBLE_ROLE.
+     */
+    private AccessibleRole getCustomClientAccessibleRole(Component component) {
+        if (activeFeatures.contains(Feature.FEATURE_SUPPORT_ROLE_AS_CLIENT_PROPERTY) &&
+                component instanceof JComponent) {
+            JComponent jc = (JComponent) component;
+            AccessibleRole role = (AccessibleRole) jc.getClientProperty(PROPERTY_ACCESSIBLE_ROLE);
+            if (role != null)
+                return role;
+        }
+        return null;
+    }
+
+    @Override
+    public Object[] invokeGetChildrenAndRoles(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, Object ops) {
+        Object[] returnValue = super.invokeGetChildrenAndRoles(defaultImplementation, a, c, whichChildren, allowIgnored, ops);
+        replaceRolesWithCustomClientRole(returnValue, 2);
+        return returnValue;
+    }
+
+    private void replaceRolesWithCustomClientRole(Object[] componentsAndRoles, int arrayIncr) {
+        for (int i = 0; i < componentsAndRoles.length; i += arrayIncr) {
+            if (componentsAndRoles[i] instanceof Component) {
+                AccessibleRole customClientRole = getCustomClientAccessibleRole((Component) componentsAndRoles[i]);
+                if (customClientRole != null)
+                    componentsAndRoles[i + 1] = customClientRole;
+            }
+        }
+    }
+
+    @Override
+    public Object[] getChildrenAndRolesRecursive(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, int level) {
+        Object[] returnValue = super.getChildrenAndRolesRecursive(defaultImplementation, a, c, whichChildren, allowIgnored, level);
+        replaceRolesWithCustomClientRole(returnValue, 3);
+        return returnValue;
     }
 }
