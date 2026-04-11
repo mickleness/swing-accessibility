@@ -6,15 +6,17 @@ import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
 /**
- * This class handles calls to static CAccessibility and CAccessibleText methods.
+ * This class intercepts calls to static CAccessibility and CAccessibleText methods.
+ * <p>
+ * The methods in this class are only called on the event dispatch thread.
  * <p>
  * By default every method simply calls <code>defaultImplementation.get()</code> or <code>defaultImplementation.run()</code>,
  * but subclasses can override any method and either ignore `defaultImplementation` or modify/filter its return value.
  * <p>
  * Some methods in CAccessibility may expect a CAccessible object as an argument,
- * or they may return a CAccessible object. This handler should assume it never
- * interacts with a CAccessible object: the CAccessibilityController class will
- * convert arguments and return values as needed automatically.
+ * or they may return a CAccessible object. The CAccessibilityController class will
+ * convert arguments and return values as needed automatically to/from CAccessible;
+ * subclasses of this class never need to think about CAccessible objects.
  */
 public abstract class CAccessibilityHandler {
 
