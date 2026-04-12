@@ -2,11 +2,10 @@ package org.swing_ax;
 
 import org.swing_ax.mac.*;
 
+import javax.accessibility.AccessibleRole;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Map;
 
 public class DemoUI extends JFrame {
     public static void main(String[] args) {
@@ -20,6 +19,8 @@ public class DemoUI extends JFrame {
                 }
 
                 TransparentPopupFactory.setActive(true);
+
+                CAccessibilityController.get().addHandler(new DefaultCAccessibilityHandler());
 
                 DemoUI d = new DemoUI();
                 d.pack();
@@ -51,12 +52,11 @@ public class DemoUI extends JFrame {
         c.fill = GridBagConstraints.BOTH;
         getContentPane().add(listScrollPane, c);
         c.gridx++;
-        getContentPane().add(panel2);
+        getContentPane().add(panel2, c);
 
         JButton postSecret = new JButton("<html><u>postsecret.com</u></html>");
         postSecret.setBorderPainted(false);
-        postSecret.putClientProperty(DefaultCAccessibilityHandler.PROPERTY_ACCESSIBLE_ROLE, MacAXRole.AXLink);
-        // postSecret.putClientProperty(DefaultCAccessibilityHandler.PROPERTY_ACCESSIBLE_ROLE, AccessibleRole.HYPERLINK);
+         postSecret.putClientProperty(DefaultCAccessibilityHandler.PROPERTY_ACCESSIBLE_ROLE, AccessibleRole.HYPERLINK);
         postSecret.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         postSecret.addActionListener(e -> {
             try {
@@ -100,6 +100,10 @@ public class DemoUI extends JFrame {
 
         JSlider slider = new JSlider(25, 45);
         panel2.add(slider);
+
+        JComboBox<String> comboBox = new JComboBox<>(new String[] { "Orange", "Apple", "Watermelon" });
+        panel2.add(comboBox);
+
 //
 //        Timer animatorTimer = new Timer(100, new ActionListener() {
 //
@@ -128,7 +132,5 @@ public class DemoUI extends JFrame {
 //            }
 //        });
 //        animatorTimer.start();
-
-        CAccessibilityController.get().addHandler(new DefaultCAccessibilityHandler());
     }
 }

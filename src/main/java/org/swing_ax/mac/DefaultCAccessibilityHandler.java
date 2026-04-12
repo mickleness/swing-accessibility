@@ -66,10 +66,27 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
             }
         },
 
+        /**
+         * This may override a JComponent's default AccessibleRole if
+         * `JComponent.getClientProperty(PROPERTY_ACCESSIBLE_ROLE)`
+         * is defined.
+         */
         FEATURE_SUPPORT_ROLE_AS_CLIENT_PROPERTY() {
             @Override
             public boolean isRelevant() {
                 return true;
+            }
+        },
+
+        /**
+         * Replace AccessibleRole.HYPERLINK with Mac's "AXLink" role.
+         *
+         * {@see <a href="https://bugs.openjdk.org/browse/JDK-8377745">JDK-8377745</a>
+         */
+        BUG_FIX_USE_MAC_LINK_ROLE() {
+            @Override
+            public boolean isRelevant() {
+                return javaVersion < 27;
             }
         };
 
@@ -155,7 +172,7 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
     public String getAccessibleRole(Supplier<String> defaultImplementation, Accessible a, Component c) {
         if (a instanceof JComponent) {
             JComponent jc = (JComponent) a;
-            AccessibleRole returnValue = getCustomClientAccessibleRole(jc);
+            AccessibleRole returnValue = getReplacementAccessibleRole(jc);
             if (returnValue instanceof MacAXRole) {
                 return ((MacAXRole)returnValue).getKey();
             } else if (returnValue != null) {
@@ -170,18 +187,25 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
     }
 
     /**
-     * Return the AccessibleRole a Component should use if
-     * it has a defined PROPERTY_ACCESSIBLE_ROLE.
+     * Return the preferred AccessibleRole of a Component, or null
+     * if we should use the default `getAccessibleContext().getAccessibleRole()`
      */
-    private AccessibleRole getCustomClientAccessibleRole(Component component) {
+    private AccessibleRole getReplacementAccessibleRole(Component component) {
+        AccessibleRole returnValue = component.getAccessibleContext().getAccessibleRole();
         if (activeFeatures.contains(Feature.FEATURE_SUPPORT_ROLE_AS_CLIENT_PROPERTY) &&
                 component instanceof JComponent) {
             JComponent jc = (JComponent) component;
-            AccessibleRole role = (AccessibleRole) jc.getClientProperty(PROPERTY_ACCESSIBLE_ROLE);
-            if (role != null)
-                return role;
+            AccessibleRole clientRole = (AccessibleRole) jc.getClientProperty(PROPERTY_ACCESSIBLE_ROLE);
+            if (clientRole != null)
+                returnValue = clientRole;
         }
-        return null;
+
+        if (activeFeatures.contains(Feature.BUG_FIX_USE_MAC_LINK_ROLE) &&
+                returnValue == AccessibleRole.HYPERLINK) {
+            returnValue = MacAXRole.AXLink;
+        }
+
+        return returnValue;
     }
 
     @Override
@@ -194,7 +218,7 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
     private void replaceRolesWithCustomClientRole(Object[] componentsAndRoles, int arrayIncr) {
         for (int i = 0; i < componentsAndRoles.length; i += arrayIncr) {
             if (componentsAndRoles[i] instanceof Component) {
-                AccessibleRole customClientRole = getCustomClientAccessibleRole((Component) componentsAndRoles[i]);
+                AccessibleRole customClientRole = getReplacementAccessibleRole((Component) componentsAndRoles[i]);
                 if (customClientRole != null)
                     componentsAndRoles[i + 1] = customClientRole;
             }
