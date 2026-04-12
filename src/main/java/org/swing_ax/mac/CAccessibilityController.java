@@ -275,7 +275,15 @@ public class CAccessibilityController {
 
             // either we're out of handlers, or the method name isn't supported
 
-            invocationEvent.dispatch();
+            // erg, I think this is associated with the AXLink feature not always working:
+//            invocationEvent.dispatch();
+
+            // this appears to work instead, though
+            invocationEventRunnable.run();
+
+            // TODO: so look in invocationEvent.dispatch() and see exactly
+            // what we need to add to emulate its error handling
+
             if (invocationEvent.getThrowable() != null) {
                 if (invocationEvent.getThrowable() instanceof RuntimeException)
                     throw (RuntimeException) invocationEvent.getThrowable();
