@@ -5,10 +5,14 @@ import org.swing_ax.mac.*;
 import javax.accessibility.AccessibleRole;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URI;
+import java.util.Locale;
 
 public class DemoUI extends JFrame {
     public static void main(String[] args) {
+        Locale.setDefault(Locale.GERMAN);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -73,6 +77,16 @@ public class DemoUI extends JFrame {
         button.getAccessibleContext().setAccessibleDescription("You may experience untold horrors if you click this button");
         button.setToolTipText("I'm a little tooltip short and stout");
         panel2.add(button);
+
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // check to make sure this isn't "clicked" via MouseEvent
+                AWTEvent currentEvent = EventQueue.getCurrentEvent();
+                System.out.println("button triggered via " + currentEvent);
+                Thread.dumpStack();
+            }
+        });
 
         JLabel label = new JLabel("Unused");
         panel2.add(label);

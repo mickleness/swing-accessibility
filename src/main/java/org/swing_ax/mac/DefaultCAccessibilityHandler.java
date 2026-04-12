@@ -88,6 +88,26 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
             public boolean isRelevant() {
                 return javaVersion < 27;
             }
+        },
+
+        /**
+         * Un-localize AccessibleAction.getAccessibleActionDescription(i) for VoiceOver.
+         *
+         * For example: if your current Locale is German then getAccessibleActionDescription(i)
+         * may return "clicken". But the JDK's obj c code is compiled to only look for
+         * "click", so it fails to understand the action description. (This is usually
+         * harmless, though, because VoiceOver falls back to simulating mouse movements
+         * to "click" the component.)
+         *
+         * {@see <a href="https://bugs.openjdk.org/browse/JDK-8377938">JDK-8377938</a>
+         */
+        BUG_FIX_USE_CLICK_ACTION_DESCRIPTION() {
+
+            @Override
+            public boolean isRelevant() {
+                // TODO: update if 8377938 is resolved
+                return true;
+            }
         };
 
         /**
@@ -229,6 +249,16 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
     public Object[] getChildrenAndRolesRecursive(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, int level) {
         Object[] returnValue = super.getChildrenAndRolesRecursive(defaultImplementation, a, c, whichChildren, allowIgnored, level);
         replaceRolesWithCustomClientRole(returnValue, 3);
+        return returnValue;
+    }
+
+    @Override
+    public String getAccessibleActionDescription(Supplier<String> defaultImplementation, AccessibleAction aa, int index, Component c) {
+        String returnValue = super.getAccessibleActionDescription(defaultImplementation, aa, index, c);
+        if (activeFeatures.contains(Feature.BUG_FIX_USE_CLICK_ACTION_DESCRIPTION) &&
+                Objects.equals(UIManager.getString("AbstractButton.clickText"), returnValue)) {
+            return AccessibleAction.CLICK;
+        }
         return returnValue;
     }
 }
