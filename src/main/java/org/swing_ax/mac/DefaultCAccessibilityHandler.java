@@ -121,9 +121,8 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
             @Override
             public boolean isRelevant() {
                 // I didn't test JDKs 9-12.
-                // I briefly tested 8, and observed a NPE i _addChildren.
-                // That is probably something these classes could address, but
-                // support JDK 8 is outside my currently planned scope
+                // I briefly tested 8, and observed that it did
+                // not reproduce this problem.
                 return 13 <= javaVersion && javaVersion <= 26;
             }
         };
