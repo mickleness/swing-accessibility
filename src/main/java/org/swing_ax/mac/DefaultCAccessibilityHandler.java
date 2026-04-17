@@ -12,6 +12,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
@@ -107,6 +108,23 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
             public boolean isRelevant() {
                 // TODO: update if 8377938 is resolved
                 return true;
+            }
+        },
+
+        /**
+         * This prevents VoiceOver from cataloging hidden components.
+         *
+         * {@see <a href="https://bugs.openjdk.org/browse/JDK-8377428">JDK-8377428</a>
+         */
+        BUG_FIX_SKIP_HIDDEN_COMPONENTS() {
+
+            @Override
+            public boolean isRelevant() {
+                // I didn't test JDKs 9-12.
+                // I briefly tested 8, and observed a NPE i _addChildren.
+                // That is probably something these classes could address, but
+                // support JDK 8 is outside my currently planned scope
+                return 13 <= javaVersion && javaVersion <= 26;
             }
         };
 
@@ -232,6 +250,8 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
     public Object[] invokeGetChildrenAndRoles(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, Object ops) {
         Object[] returnValue = super.invokeGetChildrenAndRoles(defaultImplementation, a, c, whichChildren, allowIgnored, ops);
         replaceRolesWithCustomClientRole(returnValue, 2);
+        if (!allowIgnored)
+            returnValue = removeHiddenComponents(returnValue, 2);
         return returnValue;
     }
 
@@ -245,10 +265,44 @@ public class DefaultCAccessibilityHandler extends CAccessibilityHandler {
         }
     }
 
+    /**
+     * Remove all Component entries that are not currently showing.
+     */
+    private Object[] removeHiddenComponents(Object[] components, int arrayIncr) {
+        if (!activeFeatures.contains(Feature.BUG_FIX_SKIP_HIDDEN_COMPONENTS))
+            return components;
+
+        Collection<Integer> removedIndices = new HashSet<>();
+        for (int i = 0; i < components.length; i += arrayIncr) {
+            if (components[i] instanceof Component) {
+                Component component = (Component) components[i];
+                if (component != null && !component.isShowing()) {
+                    removedIndices.add(i);
+                }
+            }
+        }
+
+        if (removedIndices.isEmpty())
+            return components;
+
+        List<Object> returnValue = new ArrayList<>(arrayIncr * (components.length - removedIndices.size()));
+        for (int i = 0; i < components.length; i += arrayIncr) {
+            if (!removedIndices.contains(i)) {
+                for (int a = 0; a < arrayIncr; a++) {
+                    returnValue.add(components[i + a]);
+                }
+            }
+        }
+
+        return returnValue.toArray(new Object[0]);
+    }
+
     @Override
     public Object[] getChildrenAndRolesRecursive(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, int level) {
         Object[] returnValue = super.getChildrenAndRolesRecursive(defaultImplementation, a, c, whichChildren, allowIgnored, level);
         replaceRolesWithCustomClientRole(returnValue, 3);
+        if (!allowIgnored)
+            returnValue = removeHiddenComponents(returnValue, 3);
         return returnValue;
     }
 
