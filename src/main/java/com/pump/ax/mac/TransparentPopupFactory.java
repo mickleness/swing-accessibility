@@ -23,7 +23,7 @@
  * questions.
  */
 
-package org.swing_ax.mac;
+package com.pump.ax.mac;
 
 import javax.swing.*;
 import java.awt.Component;

@@ -1,4 +1,4 @@
-package org.swing_ax.mac;
+package com.pump.ax.mac;
 
 import javax.accessibility.*;
 import java.awt.*;

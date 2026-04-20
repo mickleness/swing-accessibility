@@ -1,10 +1,7 @@
-package org.swing_ax.openjdk;
+package com.pump.ax.openjdk;
 
-import org.swing_ax.mac.CAccessibilityController;
-import org.swing_ax.mac.DefaultCAccessibilityHandler;
+import com.pump.ax.AXHelper;
 
-import javax.accessibility.AccessibleComponent;
-import javax.accessibility.AccessibleContext;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,7 +21,7 @@ import javax.swing.JPanel;
  */
 public class TestVoiceOverHiddenComponentNavigation {
     public static void main(String[] args) {
-        CAccessibilityController.get().addHandler(new DefaultCAccessibilityHandler());
+        AXHelper.install(true);
 
         JPanel rows = new JPanel();
         rows.setLayout(new BoxLayout(rows, BoxLayout.Y_AXIS));

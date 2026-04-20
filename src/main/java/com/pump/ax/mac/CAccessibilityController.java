@@ -1,4 +1,4 @@
-package org.swing_ax.mac;
+package com.pump.ax.mac;
 
 import javax.accessibility.*;
 import java.awt.*;
@@ -12,8 +12,9 @@ import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 public class CAccessibilityController {
-    private static final CAccessibilityController instance = new CAccessibilityController();
+    static final String UNSUPPORTED_EXCEPTION_MESSAGE = "This feature is not supported because CAccessibilityController could not initialize correctly. This can usually be resolved by adding these VM arguments: `--add-opens java.desktop/java.awt.event=ALL-UNNAMED --add-opens java.desktop/sun.lwawt.macosx=ALL-UNNAMED`";
 
+    private static final CAccessibilityController instance = new CAccessibilityController();
     private static boolean isInitialized;
 
     public static void initialize() {
@@ -39,7 +40,7 @@ public class CAccessibilityController {
         return instance;
     }
 
-    boolean isConstructed;
+    boolean isValid;
     static Field field_invocationEvent_runnable, field_callableWrapper_callable, field_callableWrapper_object, field_callableWrapper_e;
     static Method method_caccessible_getSwingAccessible, method_caccessible_getCAccessible, method_invocationEvent_finishedDispatching, method_callableWrapper_getResult;
     static Class caccessibleClass;
@@ -62,11 +63,15 @@ public class CAccessibilityController {
 
             method_invocationEvent_finishedDispatching = getMethod(InvocationEvent.class, "finishedDispatching", Boolean.TYPE);
 
-            isConstructed = true;
+            isValid = true;
         } catch(Throwable t) {
             // try adding "--add-opens java.desktop/java.awt.event=ALL-UNNAMED --add-opens java.desktop/sun.lwawt.macosx=ALL-UNNAMED" to your VM arguments
             t.printStackTrace();
         }
+    }
+
+    public boolean isValid() {
+        return isValid;
     }
 
     private static Field getField(Class clazz, String fieldName) throws NoSuchFieldException {
@@ -103,7 +108,7 @@ public class CAccessibilityController {
 //    }
 
     private boolean dispatchEvent(AWTEvent event) {
-        if (!isConstructed || !(event instanceof InvocationEvent) || handlers.isEmpty())
+        if (!isValid || !(event instanceof InvocationEvent) || handlers.isEmpty())
             return false;
 
         InvocationEvent invocationEvent = (InvocationEvent) event;
@@ -315,7 +320,8 @@ public class CAccessibilityController {
         if (listener == null)
             return;
         initialize();
-        handlers.add(0, listener);
+        if (!handlers.contains(listener))
+           handlers.add(0, listener);
     }
 
     public void removeHandler(CAccessibilityHandler listener) {

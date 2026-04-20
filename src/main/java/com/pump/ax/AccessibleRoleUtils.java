@@ -1,4 +1,4 @@
-package org.swing_ax;
+package com.pump.ax;
 
 import javax.accessibility.*;
 import java.util.HashMap;

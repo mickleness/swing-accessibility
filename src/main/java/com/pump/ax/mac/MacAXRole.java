@@ -1,7 +1,15 @@
-package org.swing_ax.mac;
+package com.pump.ax.mac;
 
 import javax.accessibility.AccessibleRole;
 
+/**
+ * This catalogs several special Mac accessible roles.
+ *
+ * WARNING: Mac OS may stop supporting these special Strings at any
+ * time. These should be approached as a short-term solution to
+ * accessibility complaints while you also explore more stable
+ * long-term solutions.
+ */
 public class MacAXRole extends AccessibleRole {
 
     public static MacAXRole AXImage = new MacAXRole("AXImage");
@@ -21,6 +29,7 @@ public class MacAXRole extends AccessibleRole {
     public static MacAXRole AXHandle = new MacAXRole("AXHandle");
     public static MacAXRole AXPopover = new MacAXRole("AXPopover");
     public static MacAXRole AXUnknown = new MacAXRole("AXUnknown");
+    public static MacAXRole AXHeading = new MacAXRole("AXHeading");
 
     protected MacAXRole(String key) {
         super(key);

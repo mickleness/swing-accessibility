@@ -1,6 +1,6 @@
-package org.swing_ax;
+package com.pump.ax;
 
-import org.swing_ax.mac.*;
+import com.pump.ax.mac.FeatureAccessibleRole;
 
 import javax.accessibility.AccessibleRole;
 import javax.swing.*;
@@ -22,9 +22,7 @@ public class DemoUI extends JFrame {
                     e.printStackTrace();
                 }
 
-                TransparentPopupFactory.setActive(true);
-
-                CAccessibilityController.get().addHandler(new DefaultCAccessibilityHandler());
+                AXHelper.install(true);
 
                 DemoUI d = new DemoUI();
                 d.pack();
@@ -60,7 +58,7 @@ public class DemoUI extends JFrame {
 
         JButton postSecret = new JButton("<html><u>postsecret.com</u></html>");
         postSecret.setBorderPainted(false);
-         postSecret.putClientProperty(DefaultCAccessibilityHandler.PROPERTY_ACCESSIBLE_ROLE, AccessibleRole.HYPERLINK);
+        postSecret.putClientProperty(FeatureAccessibleRole.PROPERTY_ACCESSIBLE_ROLE, AccessibleRole.HYPERLINK);
         postSecret.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         postSecret.addActionListener(e -> {
             try {
