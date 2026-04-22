@@ -53,10 +53,7 @@ public class AXHelper {
             registerFeature(new FixLocalizedActionDescription());
             registerFeature(new FeatureAccessibleRole());
             registerFeature(new FixReadingHTML());
-
-            // TODO: also write fix for https://bugs.openjdk.org/browse/JDK-8381236
-            // (migrating components from Window A to B)
-
+            registerFeature(new FixChangingAncestor());
 
             // TODO: also write fix for https://bugs.openjdk.org/browse/JDK-8378404
             // (use TransparentPopupFactory -- the Feature that doesn't use CAccessbilityController)

@@ -42,8 +42,8 @@ public class CAccessibilityController {
 
     boolean isValid;
     static Field field_invocationEvent_runnable, field_callableWrapper_callable, field_callableWrapper_object, field_callableWrapper_e;
-    static Method method_caccessible_getSwingAccessible, method_caccessible_getCAccessible, method_invocationEvent_finishedDispatching, method_callableWrapper_getResult;
-    static Class caccessibleClass;
+    static Method method_caccessible_getSwingAccessible, method_caccessible_getCAccessible, method_invocationEvent_finishedDispatching, method_callableWrapper_getResult, method_caccessible_dispose;
+    static Class class_caccessible;
 
     private CAccessibilityController() {
         try {
@@ -57,9 +57,10 @@ public class CAccessibilityController {
 
             method_callableWrapper_getResult = getMethod(callableWrapperClass, "getResult");
 
-            caccessibleClass = Class.forName("sun.lwawt.macosx.CAccessible");
-            method_caccessible_getSwingAccessible = getMethod(caccessibleClass, "getSwingAccessible", Accessible.class);
-            method_caccessible_getCAccessible = getMethod(caccessibleClass, "getCAccessible", Accessible.class);
+            class_caccessible = Class.forName("sun.lwawt.macosx.CAccessible");
+            method_caccessible_getSwingAccessible = getMethod(class_caccessible, "getSwingAccessible", Accessible.class);
+            method_caccessible_getCAccessible = getMethod(class_caccessible, "getCAccessible", Accessible.class);
+            method_caccessible_dispose = getMethod(class_caccessible, "dispose");
 
             method_invocationEvent_finishedDispatching = getMethod(InvocationEvent.class, "finishedDispatching", Boolean.TYPE);
 
@@ -68,6 +69,39 @@ public class CAccessibilityController {
             // try adding "--add-opens java.desktop/java.awt.event=ALL-UNNAMED --add-opens java.desktop/sun.lwawt.macosx=ALL-UNNAMED" to your VM arguments
             t.printStackTrace();
         }
+    }
+
+    /**
+     * This invokes `CAccessible.dispose()`
+     */
+    static void disposeCAccessible(Component comp) throws Exception {
+        if (!get().isValid())
+            throw new UnsupportedOperationException(UNSUPPORTED_EXCEPTION_MESSAGE);
+
+        if (comp instanceof Container) {
+            for (Component child : ((Container) comp).getComponents()) {
+                disposeCAccessible(child);
+            }
+        }
+
+        Object caccessible = method_caccessible_getCAccessible.invoke(null, comp);
+        method_caccessible_dispose.invoke(caccessible);
+
+        // that's all that is required to keep JDK-8381236.
+
+        // However: IMO this seems really short-sighted. We should be doing more
+        // than simply disposing. We need to also:
+        // A. Remove the AXChangeNotifier. This should be handled by #dispose()
+        // B. Call `setNativeAXResource(context, null)`, otherwise we have corrupt
+        // cached info.
+
+        // I proposed this kind of cleanup in my OpenJDK PR, but for this hacky
+        // project: I'm going to stick with the bare minimum effort it
+        // takes to resolve the problem (for now).
+
+        // (Doing those other things would (I think) require reflection across
+        // different modules. I don't want to require a new set of module
+        // permissions just for this one bug.)
     }
 
     public boolean isValid() {
@@ -85,27 +119,6 @@ public class CAccessibilityController {
         returnValue.setAccessible(true);
         return returnValue;
     }
-
-//    public static boolean unregisterFromCocoaAXSystem(Accessible accessible) {
-//        try {
-//            Class z1 = Class.forName("sun.lwawt.macosx.CAccessible");
-//            Method m = getMethod(z1, "getCAccessible", Accessible.class);
-//            Object t = m.invoke(null, accessible);
-//
-//            Class z2 = Class.forName("sun.lwawt.macosx.CFRetainedResource");
-//            Field f = getField(z2, "ptr");
-//            Long ptr = (Long) f.get(t);
-//
-//            if (ptr == 0)
-//                return false;
-//            Method m2 = getMethod(z1, "unregisterFromCocoaAXSystem", Long.TYPE);
-//            m2.invoke(null, ptr);
-//            return true;
-//        } catch(Throwable t) {
-//            t.printStackTrace();;
-//        }
-//        return false;
-//    }
 
     private boolean dispatchEvent(AWTEvent event) {
         if (!isValid || !(event instanceof InvocationEvent) || handlers.isEmpty())
@@ -173,7 +186,7 @@ public class CAccessibilityController {
         }
 
         private Object convertFromCAccessibleValue(Object obj) throws InvocationTargetException, IllegalAccessException {
-            if (caccessibleClass.isInstance(obj)) {
+            if (class_caccessible.isInstance(obj)) {
                 obj = method_caccessible_getSwingAccessible.invoke(null, obj);
             }
             return obj;
@@ -183,7 +196,7 @@ public class CAccessibilityController {
         private boolean shouldMethodReturnValueBeCAccessible() {
             // always check with a real-world example, if we can:
             if (originalResult != null)
-                isMethodExpectingCAccessibleValue.put(method, caccessibleClass.isInstance(originalResult));
+                isMethodExpectingCAccessibleValue.put(method, class_caccessible.isInstance(originalResult));
             Boolean b = isMethodExpectingCAccessibleValue.get(method);
             if (b != null)
                 return b;
@@ -197,7 +210,7 @@ public class CAccessibilityController {
         }
 
         private Object convertToCAccessibleValue(Object obj) throws InvocationTargetException, IllegalAccessException {
-            if (obj instanceof Accessible && !caccessibleClass.isInstance(obj)) {
+            if (obj instanceof Accessible && !class_caccessible.isInstance(obj)) {
                 obj = method_caccessible_getCAccessible.invoke(null, obj);
             }
             return obj;
