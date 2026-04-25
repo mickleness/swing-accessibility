@@ -4,10 +4,13 @@ import com.pump.ax.mac.*;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AXHelper {
-
+    public static final Logger logger = Logger.getLogger("AXHelper");
     public static boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+    public static boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
 
     public static final float javaVersion = getJavaVersionAsFloat();
 
@@ -23,28 +26,15 @@ public class AXHelper {
     }
 
     private static boolean isInstalled = false;
-    private static boolean includeAllRecommendedFeatures;
-    static ArrayList<Feature> allFeatures = new ArrayList<>();
-    public static void install(boolean includeAllRecommendedFeatures) {
+
+    public static void install() {
         synchronized (AXHelper.class) {
-            if (isInstalled) {
-                if (AXHelper.includeAllRecommendedFeatures == includeAllRecommendedFeatures)
-                    return;
-                throw new IllegalStateException("install(" + AXHelper.includeAllRecommendedFeatures + ") was already called");
-            }
+            if (isInstalled)
+                return;
             isInstalled = true;
-            AXHelper.includeAllRecommendedFeatures = includeAllRecommendedFeatures;
         }
 
-        if (includeAllRecommendedFeatures) {
-            for (Feature feature : allFeatures) {
-                try {
-                    feature.install();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        logger.log(Level.INFO, "Installing for JDK {0} on {1}", new Object[] { javaVersion, System.getProperty("os.name") });
 
         if (isMac) {
             registerFeature(new FixVoiceOverHiddenComponents());
@@ -57,24 +47,32 @@ public class AXHelper {
 
             // TODO: also write fix for https://bugs.openjdk.org/browse/JDK-8378404
             // (use TransparentPopupFactory -- the Feature that doesn't use CAccessbilityController)
+        } else if (isWindows) {
+            // TODO: can we write similar architecture for FeatureAccessibleRole?
         }
-
-        // TODO: log Features that installed by default
     }
+
+    static ArrayList<Feature> allFeatures = new ArrayList<>();
 
     public static void registerFeature(Feature feature) {
         Objects.requireNonNull(feature);
 
         synchronized (AXHelper.class) {
-            if (!allFeatures.contains(feature))
+            if (!allFeatures.contains(feature)) {
                 allFeatures.add(feature);
-        }
-
-        if (isInstalled && includeAllRecommendedFeatures) {
-            try {
-                feature.install();
-            } catch(Exception e) {
-                e.printStackTrace();
+                if (!feature.isRecommended()) {
+                    logger.log(Level.INFO, "{0} is not recommended in this environment.", feature);
+                } else if (!feature.isSupported()) {
+                    logger.log(Level.INFO, "{0}} is recommended in this environment, but it is not supported.", feature);
+                } else {
+                    try {
+                        feature.install();
+                        logger.log(Level.INFO, "{0} installed.", feature);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, feature + " failed ot install", e);
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }

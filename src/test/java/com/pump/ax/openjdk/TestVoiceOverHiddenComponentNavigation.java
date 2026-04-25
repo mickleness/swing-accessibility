@@ -21,7 +21,7 @@ import javax.swing.JPanel;
  */
 public class TestVoiceOverHiddenComponentNavigation {
     public static void main(String[] args) {
-        AXHelper.install(true);
+        AXHelper.install();
 
         JPanel rows = new JPanel();
         rows.setLayout(new BoxLayout(rows, BoxLayout.Y_AXIS));

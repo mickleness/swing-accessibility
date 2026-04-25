@@ -12,7 +12,6 @@ import java.util.Locale;
 
 public class DemoUI extends JFrame {
     public static void main(String[] args) {
-        Locale.setDefault(Locale.GERMAN);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -22,7 +21,7 @@ public class DemoUI extends JFrame {
                     e.printStackTrace();
                 }
 
-                AXHelper.install(true);
+                AXHelper.install();
 
                 DemoUI d = new DemoUI();
                 d.pack();

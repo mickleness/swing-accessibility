@@ -18,7 +18,7 @@ import java.awt.*;
  */
 public class VoiceOverTooltipTest {
     public static void main(String[] args) {
-        AXHelper.install(true);
+        AXHelper.install();
 
         JFrame f = new JFrame();
         JButton b1 = new JButton("But");
