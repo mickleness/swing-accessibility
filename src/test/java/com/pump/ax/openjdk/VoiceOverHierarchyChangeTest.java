@@ -26,7 +26,7 @@ import java.awt.event.ComponentEvent;
  */
 public class VoiceOverHierarchyChangeTest {
     public static void main(String[] args) {
-        AXHelper.install(true);
+        AXHelper.install();
 
         JFrame f1 = new JFrame();
         f1.getContentPane().setPreferredSize(new Dimension(300, 100));
