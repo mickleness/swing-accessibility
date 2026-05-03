@@ -1,7 +1,10 @@
 package com.pump.ax.mac;
 
+import com.pump.ax.AbstractBridgeHandler;
+
 import javax.accessibility.*;
 import java.awt.*;
+import java.awt.event.InvocationEvent;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
@@ -18,16 +21,19 @@ import java.util.function.Supplier;
  * convert arguments and return values as needed automatically to/from CAccessible;
  * subclasses of this class never need to think about CAccessible objects.
  */
-public abstract class CAccessibilityHandler {
+public abstract class CAccessibilityHandler extends AbstractBridgeHandler {
 
-    public static final Object RETURN_VALUE_UNSUPPORTED = new Object();
 
     /**
      * Return a value for a given CAccessibility or CAccessibleText metthod, or return RETURN_VALUE_UNSUPPORTED.
      * <p>
      * Subclasses usually shouldn't need to override this method unless they need to correct the incoming arguments.
      */
-    public Object invoke(Method method, Supplier defaultSupplier, Runnable defaultRunnable, Component component, Object[] arguments) {
+    @Override
+    public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
+        Object src = invocationEvent.getSource();
+        Component component = src instanceof Component ?
+                (Component) src : null;
         switch (method.getName()) {
             case "getAccessibleActionDescription":
                 return getAccessibleActionDescription(defaultSupplier,

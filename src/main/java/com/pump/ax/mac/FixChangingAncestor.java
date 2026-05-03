@@ -6,6 +6,7 @@ import com.pump.ax.Feature;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ContainerEvent;
+import java.awt.event.InvocationEvent;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
@@ -28,17 +29,17 @@ public class FixChangingAncestor extends Feature {
      * CAccessibility or CAccessibleText methods are being used. (This is optional,
      * but it lets us avoid unnecessary work later.)
      */
-    private CAccessibilityHandler handler = new CAccessibilityHandler() {
+    private final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public Object invoke(Method method, Supplier defaultSupplier, Runnable defaultRunnable, Component component, Object[] arguments) {
-            Object returnValue = super.invoke(method, defaultSupplier, defaultRunnable, component, arguments);
+        public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
+            Object returnValue = super.invoke(invocationEvent, method, defaultSupplier, defaultRunnable, arguments);
             if (returnValue != CAccessibilityHandler.RETURN_VALUE_UNSUPPORTED)
                 was_AX_ever_used = true;
             return returnValue;
         }
     };
 
-    private AWTEventListener componentRemovedListener = new AWTEventListener() {
+    private final AWTEventListener componentRemovedListener = new AWTEventListener() {
         @Override
         public void eventDispatched(AWTEvent event) {
             if (event.getID() == ContainerEvent.COMPONENT_REMOVED && was_AX_ever_used) {

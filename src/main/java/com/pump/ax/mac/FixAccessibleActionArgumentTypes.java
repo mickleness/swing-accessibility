@@ -6,6 +6,7 @@ import com.pump.ax.Feature;
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
 import java.awt.*;
+import java.awt.event.InvocationEvent;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
@@ -19,7 +20,7 @@ public class FixAccessibleActionArgumentTypes extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public Object invoke(Method method, Supplier defaultSupplier, Runnable defaultRunnable, Component component, Object[] arguments) {
+        public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
             if (method.getName().equals("doAccessibleAction")) {
                 if (arguments[0] instanceof AccessibleContext && !(arguments[0] instanceof AccessibleAction)) {
                     AccessibleAction aa = ((AccessibleContext) arguments[0]).getAccessibleAction();
@@ -28,7 +29,7 @@ public class FixAccessibleActionArgumentTypes extends Feature {
                 }
             }
 
-            return super.invoke(method, defaultSupplier, defaultRunnable, component, arguments);
+            return super.invoke(invocationEvent, method, defaultSupplier, defaultRunnable, arguments);
         }
     };
 

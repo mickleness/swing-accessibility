@@ -1,17 +1,20 @@
 package com.pump.ax.windows;
 
+import com.pump.ax.AbstractBridgeHandler;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import java.awt.*;
+import java.awt.event.InvocationEvent;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
-public class AccessBridgeHandler {
+public class AccessBridgeHandler extends AbstractBridgeHandler {
 
-    public static final Object RETURN_VALUE_UNSUPPORTED = new Object();
 
-    public Object invoke(Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
+    @Override
+    public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
         switch(method.getName()) {
             case "getAccessibleRoleStringFromContext":
                 return getAccessibleRoleStringFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
