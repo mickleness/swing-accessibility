@@ -12,7 +12,7 @@ public class WindowsFeatureAccessibleRole extends AbstractFeatureAccessibleRole 
     final AccessBridgeHandler handler = new AccessBridgeHandler() {
 
         @Override
-        public AccessibleRole getAccessibleRoleStringFromContext(Supplier<AccessibleRole> defaultSupplier, AccessibleContext ac) {
+        protected AccessibleRole getAccessibleRoleStringFromContext(Supplier<AccessibleRole> defaultSupplier, AccessibleContext ac) {
             Component c = getComponent(ac);
             if (c != null) {
                 AccessibleRole r = WindowsFeatureAccessibleRole.this.getAccessibleRole(c);
