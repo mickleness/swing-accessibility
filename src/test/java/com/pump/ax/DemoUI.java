@@ -1,6 +1,6 @@
 package com.pump.ax;
 
-import com.pump.ax.mac.FeatureAccessibleRole;
+import com.pump.ax.mac.MacFeatureAccessibleRole;
 
 import javax.accessibility.AccessibleRole;
 import javax.swing.*;
@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
-import java.util.Locale;
 
 public class DemoUI extends JFrame {
     public static void main(String[] args) {
@@ -57,7 +56,7 @@ public class DemoUI extends JFrame {
 
         JButton postSecret = new JButton("<html><u>postsecret.com</u></html>");
         postSecret.setBorderPainted(false);
-        postSecret.putClientProperty(FeatureAccessibleRole.PROPERTY_ACCESSIBLE_ROLE, AccessibleRole.HYPERLINK);
+        postSecret.putClientProperty(MacFeatureAccessibleRole.PROPERTY_ACCESSIBLE_ROLE, AccessibleRole.HYPERLINK);
         postSecret.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         postSecret.addActionListener(e -> {
             try {

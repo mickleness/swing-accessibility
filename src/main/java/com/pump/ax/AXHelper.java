@@ -1,6 +1,7 @@
 package com.pump.ax;
 
 import com.pump.ax.mac.*;
+import com.pump.ax.windows.WindowsFeatureAccessibleRole;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -41,14 +42,14 @@ public class AXHelper {
             registerFeature(new FixAnnouncePrevFocusedComponent());
             registerFeature(new FixAccessibleActionArgumentTypes());
             registerFeature(new FixLocalizedActionDescription());
-            registerFeature(new FeatureAccessibleRole());
+            registerFeature(new MacFeatureAccessibleRole());
             registerFeature(new FixReadingHTML());
             registerFeature(new FixChangingAncestor());
 
             // TODO: also write fix for https://bugs.openjdk.org/browse/JDK-8378404
             // (use TransparentPopupFactory -- the Feature that doesn't use CAccessbilityController)
         } else if (isWindows) {
-            // TODO: can we write similar architecture for FeatureAccessibleRole?
+            registerFeature(new WindowsFeatureAccessibleRole());
         }
     }
 
