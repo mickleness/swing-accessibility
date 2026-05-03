@@ -7,6 +7,7 @@ import javax.swing.text.AttributeSet;
 import java.awt.*;
 import java.awt.event.InvocationEvent;
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -19,373 +20,373 @@ import java.util.function.Supplier;
  */
 public class AccessBridgeHandler extends AbstractBridgeHandler {
 
+    protected Supplier defaultSupplier;
 
     @Override
-    public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
-        switch(method.getName()) {
-            case "getRootAccessibleContext":
-                return getRootAccessibleContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleContextAt_2":
-                return getAccessibleContextAt_2(defaultSupplier, (Integer) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleContextWithFocus":
-                return getAccessibleContextWithFocus(defaultSupplier);
-            case "getAccessibleNameFromContext":
-                return getAccessibleNameFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleDescriptionFromContext":
-                return getAccessibleDescriptionFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleRoleStringFromContext":
-                return getAccessibleRoleStringFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleStatesStringFromContext_en_US":
-                return getAccessibleStatesStringFromContext_en_US(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleParentFromContext":
-                return getAccessibleParentFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleIndexInParentFromContext":
-                return getAccessibleIndexInParentFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleChildrenCountFromContext":
-                return getAccessibleChildrenCountFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleBoundsOnScreenFromContext":
-                return getAccessibleBoundsOnScreenFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleComponentFromContext":
-                return getAccessibleComponentFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleActionFromContext":
-                return getAccessibleActionFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleSelectionFromContext":
-                if (arguments.length == 2) {
-                    return getAccessibleSelectionFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-                }
-                return getAccessibleSelectionFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTextFromContext":
-                return getAccessibleTextFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleValueFromContext":
-                return getAccessibleValueFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getCaretLocation":
-                return getCaretLocation(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleCharCountFromContext":
-                return getAccessibleCharCountFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleCaretPositionFromContext":
-                return getAccessibleCaretPositionFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleIndexAtPointFromContext":
-                return getAccessibleIndexAtPointFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
-            case "getAccessibleLetterAtIndexFromContext":
-                return getAccessibleLetterAtIndexFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleWordAtIndexFromContext":
-                return getAccessibleWordAtIndexFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleSentenceAtIndexFromContext":
-                return getAccessibleSentenceAtIndexFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleTextSelectionStartFromContext":
-                return getAccessibleTextSelectionStartFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTextSelectionEndFromContext":
-                return getAccessibleTextSelectionEndFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTextSelectedTextFromContext":
-                return getAccessibleTextSelectedTextFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleAttributesAtIndexFromContext":
-                return getAccessibleAttributesAtIndexFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleTextLineLeftBoundsFromContext":
-                return getAccessibleTextLineLeftBoundsFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleTextLineRightBoundsFromContext":
-                return getAccessibleTextLineRightBoundsFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleTextRangeFromContext":
-                return getAccessibleTextRangeFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
-            case "getAccessibleAttributeSetAtIndexFromContext":
-                return getAccessibleTextRangeFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleTextRectAtIndexFromContext":
-                return getAccessibleTextRectAtIndexFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "getCurrentAccessibleValueFromContext":
-                return getCurrentAccessibleValueFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getMaximumAccessibleValueFromContext":
-                return getMaximumAccessibleValueFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getMinimumAccessibleValueFromContext":
-                return getMinimumAccessibleValueFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "addAccessibleSelectionFromContext":
-                addAccessibleSelectionFromContext(defaultRunnable, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-                return null;
-            case "clearAccessibleSelectionFromContext":
-                clearAccessibleSelectionFromContext(defaultRunnable, (AccessibleContext) arguments[0]);
-                return null;
-            case "getAccessibleSelectionCountFromContext":
-                return getAccessibleSelectionCountFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "isAccessibleChildSelectedFromContext":
-                return isAccessibleChildSelectedFromContext(defaultSupplier, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-            case "removeAccessibleSelectionFromContext":
-                removeAccessibleSelectionFromContext(defaultRunnable, (AccessibleContext) arguments[0], (Integer) arguments[1]);
-                return null;
-            case "selectAllAccessibleSelectionFromContext":
-                selectAllAccessibleSelectionFromContext(defaultRunnable, (AccessibleContext) arguments[0]);
-                return null;
-            case "getAccessibleTableFromContext":
-                return getAccessibleTableFromContext(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableRowCount":
-                return getAccessibleTableRowCount(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableColumnCount":
-                return getAccessibleTableColumnCount(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableCellAccessibleContext":
-                return getAccessibleTableCellAccessibleContext(defaultSupplier,
-                        (AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
-            case "getAccessibleTableCellIndex":
-                return getAccessibleTableCellIndex(defaultSupplier,
-                        (AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
-            case "getAccessibleTableCellRowExtent":
-                return getAccessibleTableCellRowExtent(defaultSupplier,
-                        (AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
-            case "getAccessibleTableCellColumnExtent":
-                return getAccessibleTableCellColumnExtent(defaultSupplier,
-                        (AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
-            case "isAccessibleTableCellSelected":
-                return isAccessibleTableCellSelected(defaultSupplier,
-                        (AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
-            case "getAccessibleTableRowHeader":
-                return getAccessibleTableRowHeader(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableColumnHeader":
-                return getAccessibleTableColumnHeader(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableRowHeaderRowCount":
-                return getAccessibleTableRowHeaderRowCount(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableRowHeaderColumnCount":
-                return getAccessibleTableRowHeaderColumnCount(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableColumnHeaderRowCount":
-                return getAccessibleTableColumnHeaderRowCount(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableColumnHeaderColumnCount":
-                return getAccessibleTableColumnHeaderColumnCount(defaultSupplier, (AccessibleContext) arguments[0]);
-            case "getAccessibleTableRowDescription":
-                return getAccessibleTableRowDescription(defaultSupplier, (AccessibleTable) arguments[0], (Integer) arguments[1]);
-            case "getAccessibleTableColumnDescription":
-                return getAccessibleTableColumnDescription(defaultSupplier, (AccessibleTable) arguments[0], (Integer) arguments[1]);
+    public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Object[] arguments) {
+        this.defaultSupplier = Objects.requireNonNull(defaultSupplier);
+        try {
+            switch(method.getName()) {
+                case "getRootAccessibleContext":
+                    return getRootAccessibleContext((AccessibleContext) arguments[0]);
+                case "getAccessibleContextAt_2":
+                    return getAccessibleContextAt_2((Integer) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleContextWithFocus":
+                    return getAccessibleContextWithFocus();
+                case "getAccessibleNameFromContext":
+                    return getAccessibleNameFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleDescriptionFromContext":
+                    return getAccessibleDescriptionFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleRoleStringFromContext":
+                    return getAccessibleRoleStringFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleStatesStringFromContext_en_US":
+                    return getAccessibleStatesStringFromContext_en_US((AccessibleContext) arguments[0]);
+                case "getAccessibleParentFromContext":
+                    return getAccessibleParentFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleIndexInParentFromContext":
+                    return getAccessibleIndexInParentFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleChildrenCountFromContext":
+                    return getAccessibleChildrenCountFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleBoundsOnScreenFromContext":
+                    return getAccessibleBoundsOnScreenFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleComponentFromContext":
+                    return getAccessibleComponentFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleActionFromContext":
+                    return getAccessibleActionFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleSelectionFromContext":
+                    if (arguments.length == 2) {
+                        return getAccessibleSelectionFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                    }
+                    return getAccessibleSelectionFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleTextFromContext":
+                    return getAccessibleTextFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleValueFromContext":
+                    return getAccessibleValueFromContext((AccessibleContext) arguments[0]);
+                case "getCaretLocation":
+                    return getCaretLocation((AccessibleContext) arguments[0]);
+                case "getAccessibleCharCountFromContext":
+                    return getAccessibleCharCountFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleCaretPositionFromContext":
+                    return getAccessibleCaretPositionFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleIndexAtPointFromContext":
+                    return getAccessibleIndexAtPointFromContext((AccessibleContext) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleLetterAtIndexFromContext":
+                    return getAccessibleLetterAtIndexFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleWordAtIndexFromContext":
+                    return getAccessibleWordAtIndexFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleSentenceAtIndexFromContext":
+                    return getAccessibleSentenceAtIndexFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTextSelectionStartFromContext":
+                    return getAccessibleTextSelectionStartFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleTextSelectionEndFromContext":
+                    return getAccessibleTextSelectionEndFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleTextSelectedTextFromContext":
+                    return getAccessibleTextSelectedTextFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleAttributesAtIndexFromContext":
+                    return getAccessibleAttributesAtIndexFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTextLineLeftBoundsFromContext":
+                    return getAccessibleTextLineLeftBoundsFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTextLineRightBoundsFromContext":
+                    return getAccessibleTextLineRightBoundsFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTextRangeFromContext":
+                    return getAccessibleTextRangeFromContext((AccessibleContext) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleAttributeSetAtIndexFromContext":
+                    return getAccessibleTextRangeFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTextRectAtIndexFromContext":
+                    return getAccessibleTextRectAtIndexFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getCurrentAccessibleValueFromContext":
+                    return getCurrentAccessibleValueFromContext((AccessibleContext) arguments[0]);
+                case "getMaximumAccessibleValueFromContext":
+                    return getMaximumAccessibleValueFromContext((AccessibleContext) arguments[0]);
+                case "getMinimumAccessibleValueFromContext":
+                    return getMinimumAccessibleValueFromContext((AccessibleContext) arguments[0]);
+                case "addAccessibleSelectionFromContext":
+                    addAccessibleSelectionFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                    return null;
+                case "clearAccessibleSelectionFromContext":
+                    clearAccessibleSelectionFromContext((AccessibleContext) arguments[0]);
+                    return null;
+                case "getAccessibleSelectionCountFromContext":
+                    return getAccessibleSelectionCountFromContext((AccessibleContext) arguments[0]);
+                case "isAccessibleChildSelectedFromContext":
+                    return isAccessibleChildSelectedFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "removeAccessibleSelectionFromContext":
+                    removeAccessibleSelectionFromContext((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                    return null;
+                case "selectAllAccessibleSelectionFromContext":
+                    selectAllAccessibleSelectionFromContext((AccessibleContext) arguments[0]);
+                    return null;
+                case "getAccessibleTableFromContext":
+                    return getAccessibleTableFromContext((AccessibleContext) arguments[0]);
+                case "getAccessibleTableRowCount":
+                    return getAccessibleTableRowCount((AccessibleContext) arguments[0]);
+                case "getAccessibleTableColumnCount":
+                    return getAccessibleTableColumnCount((AccessibleContext) arguments[0]);
+                case "getAccessibleTableCellAccessibleContext":
+                    return getAccessibleTableCellAccessibleContext((AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleTableCellIndex":
+                    return getAccessibleTableCellIndex((AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleTableCellRowExtent":
+                    return getAccessibleTableCellRowExtent((AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleTableCellColumnExtent":
+                    return getAccessibleTableCellColumnExtent((AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "isAccessibleTableCellSelected":
+                    return isAccessibleTableCellSelected((AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleTableRowHeader":
+                    return getAccessibleTableRowHeader((AccessibleContext) arguments[0]);
+                case "getAccessibleTableColumnHeader":
+                    return getAccessibleTableColumnHeader((AccessibleContext) arguments[0]);
+                case "getAccessibleTableRowHeaderRowCount":
+                    return getAccessibleTableRowHeaderRowCount((AccessibleContext) arguments[0]);
+                case "getAccessibleTableRowHeaderColumnCount":
+                    return getAccessibleTableRowHeaderColumnCount((AccessibleContext) arguments[0]);
+                case "getAccessibleTableColumnHeaderRowCount":
+                    return getAccessibleTableColumnHeaderRowCount((AccessibleContext) arguments[0]);
+                case "getAccessibleTableColumnHeaderColumnCount":
+                    return getAccessibleTableColumnHeaderColumnCount((AccessibleContext) arguments[0]);
+                case "getAccessibleTableRowDescription":
+                    return getAccessibleTableRowDescription((AccessibleTable) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTableColumnDescription":
+                    return getAccessibleTableColumnDescription((AccessibleTable) arguments[0], (Integer) arguments[1]);
 
-            default:
-                return RETURN_VALUE_UNSUPPORTED;
+                default:
+                    return RETURN_VALUE_UNSUPPORTED;
+            }
+        } finally {
+            this.defaultSupplier = null;
         }
     }
 
-    protected Rectangle getAccessibleTextRectAtIndexFromContext(Supplier<Rectangle> defaultSupplier, AccessibleContext ac, int index) {
-        return defaultSupplier.get();
+    protected Rectangle getAccessibleTextRectAtIndexFromContext(AccessibleContext ac, int index) {
+        return (Rectangle) defaultSupplier.get();
     }
 
-    protected AccessibleContext getRootAccessibleContext(Supplier<AccessibleContext> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleContext getRootAccessibleContext(AccessibleContext ac) {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
-    protected AccessibleContext getAccessibleContextAt_2(Supplier<AccessibleContext> defaultSupplier, int x, int y) {
-        return defaultSupplier.get();
+    protected AccessibleContext getAccessibleContextAt_2(int x, int y) {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
-    protected AccessibleContext getAccessibleContextWithFocus(Supplier<AccessibleContext> defaultSupplier) {
-        return defaultSupplier.get();
+    protected AccessibleContext getAccessibleContextWithFocus() {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
-    protected String getAccessibleNameFromContext(Supplier<String> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected String getAccessibleNameFromContext(AccessibleContext ac) {
+        return (String) defaultSupplier.get();
     }
 
-    protected String getAccessibleDescriptionFromContext(Supplier<String> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected String getAccessibleDescriptionFromContext(AccessibleContext ac) {
+        return (String) defaultSupplier.get();
     }
 
-    protected AccessibleRole getAccessibleRoleStringFromContext(Supplier<AccessibleRole> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleRole getAccessibleRoleStringFromContext(AccessibleContext ac) {
+        return (AccessibleRole) defaultSupplier.get();
     }
 
-    protected AccessibleStateSet getAccessibleStatesStringFromContext_en_US(Supplier<AccessibleStateSet> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleStateSet getAccessibleStatesStringFromContext_en_US(AccessibleContext ac) {
+        return (AccessibleStateSet) defaultSupplier.get();
     }
 
-    protected AccessibleContext getAccessibleParentFromContext(Supplier<AccessibleContext> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleContext getAccessibleParentFromContext(AccessibleContext ac) {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
-    protected int getAccessibleIndexInParentFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleIndexInParentFromContext(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleChildrenCountFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleChildrenCountFromContext(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected Rectangle getAccessibleBoundsOnScreenFromContext(Supplier<Rectangle> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected Rectangle getAccessibleBoundsOnScreenFromContext(AccessibleContext ac) {
+        return (Rectangle) defaultSupplier.get();
     }
 
-    protected AccessibleComponent getAccessibleComponentFromContext(Supplier<AccessibleComponent> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleComponent getAccessibleComponentFromContext(AccessibleContext ac) {
+        return (AccessibleComponent) defaultSupplier.get();
     }
 
-    protected AccessibleAction getAccessibleActionFromContext(Supplier<AccessibleAction> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleAction getAccessibleActionFromContext(AccessibleContext ac) {
+        return (AccessibleAction) defaultSupplier.get();
     }
 
-    protected AccessibleSelection getAccessibleSelectionFromContext(Supplier<AccessibleSelection> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleSelection getAccessibleSelectionFromContext(AccessibleContext ac) {
+        return (AccessibleSelection) defaultSupplier.get();
     }
 
-    protected AccessibleText getAccessibleTextFromContext(Supplier<AccessibleText> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleText getAccessibleTextFromContext(AccessibleContext ac) {
+        return (AccessibleText) defaultSupplier.get();
     }
 
-    protected AccessibleValue getAccessibleValueFromContext(Supplier<AccessibleValue> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleValue getAccessibleValueFromContext(AccessibleContext ac) {
+        return (AccessibleValue) defaultSupplier.get();
     }
 
-    protected Rectangle getCaretLocation(Supplier<Rectangle> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected Rectangle getCaretLocation(AccessibleContext ac) {
+        return (Rectangle) defaultSupplier.get();
     }
 
-    protected int getAccessibleCharCountFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleCharCountFromContext(AccessibleContext ac) {
+        return (int) defaultSupplier.get();
     }
 
-    protected int getAccessibleCaretPositionFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleCaretPositionFromContext(AccessibleContext ac) {
+        return (int) defaultSupplier.get();
     }
 
-    protected int getAccessibleIndexAtPointFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac, int x, int y) {
-        return defaultSupplier.get();
+    protected int getAccessibleIndexAtPointFromContext(AccessibleContext ac, int x, int y) {
+        return (int) defaultSupplier.get();
     }
 
-    protected String getAccessibleLetterAtIndexFromContext(Supplier<String> defaultSupplier, AccessibleContext ac, int index) {
-        return defaultSupplier.get();
+    protected String getAccessibleLetterAtIndexFromContext(AccessibleContext ac, int index) {
+        return (String) defaultSupplier.get();
     }
 
-    protected String getAccessibleWordAtIndexFromContext(Supplier<String> defaultSupplier, AccessibleContext ac, Integer index) {
-        return defaultSupplier.get();
+    protected String getAccessibleWordAtIndexFromContext(AccessibleContext ac, Integer index) {
+        return (String) defaultSupplier.get();
     }
 
-    protected String getAccessibleSentenceAtIndexFromContext(Supplier<String> defaultSupplier, AccessibleContext ac, Integer index) {
-        return defaultSupplier.get();
+    protected String getAccessibleSentenceAtIndexFromContext(AccessibleContext ac, Integer index) {
+        return (String) defaultSupplier.get();
     }
 
-    protected int getAccessibleTextSelectionStartFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTextSelectionStartFromContext(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTextSelectionEndFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTextSelectionEndFromContext(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected String getAccessibleTextSelectedTextFromContext(Supplier<String> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected String getAccessibleTextSelectedTextFromContext(AccessibleContext ac) {
+        return (String) defaultSupplier.get();
     }
 
-    protected String getAccessibleAttributesAtIndexFromContext(Supplier<String> defaultSupplier, AccessibleContext ac, Integer index) {
-        return defaultSupplier.get();
+    protected String getAccessibleAttributesAtIndexFromContext(AccessibleContext ac, Integer index) {
+        return (String) defaultSupplier.get();
     }
 
-    protected int getAccessibleTextLineLeftBoundsFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac, Integer index) {
-        return defaultSupplier.get();
+    protected int getAccessibleTextLineLeftBoundsFromContext(AccessibleContext ac, Integer index) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTextLineRightBoundsFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac, Integer index) {
-        return defaultSupplier.get();
+    protected int getAccessibleTextLineRightBoundsFromContext(AccessibleContext ac, Integer index) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected String getAccessibleTextRangeFromContext(Supplier<String> defaultSupplier, AccessibleContext ac, Integer start, Integer end) {
-        return defaultSupplier.get();
+    protected String getAccessibleTextRangeFromContext(AccessibleContext ac, Integer start, Integer end) {
+        return (String) defaultSupplier.get();
     }
 
-    protected AttributeSet getAccessibleTextRangeFromContext(Supplier<AttributeSet> defaultSupplier, AccessibleContext ac, Integer index) {
-        return defaultSupplier.get();
+    protected AttributeSet getAccessibleTextRangeFromContext(AccessibleContext ac, Integer index) {
+        return (AttributeSet) defaultSupplier.get();
     }
 
-    protected Number getCurrentAccessibleValueFromContext(Supplier<Number> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected Number getCurrentAccessibleValueFromContext(AccessibleContext ac) {
+        return (Number) defaultSupplier.get();
     }
 
-    protected Number getMaximumAccessibleValueFromContext(Supplier<Number> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected Number getMaximumAccessibleValueFromContext(AccessibleContext ac) {
+        return (Number) defaultSupplier.get();
     }
 
-    protected Number getMinimumAccessibleValueFromContext(Supplier<Number> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected Number getMinimumAccessibleValueFromContext(AccessibleContext ac) {
+        return (Number) defaultSupplier.get();
     }
 
-    protected void addAccessibleSelectionFromContext(Runnable defaultRunnable, AccessibleContext ac, int i) {
-        defaultRunnable.run();
+    protected void addAccessibleSelectionFromContext(AccessibleContext ac, int i) {
+        defaultSupplier.get();
     }
 
-    protected void clearAccessibleSelectionFromContext(Runnable defaultRunnable, AccessibleContext ac) {
-        defaultRunnable.run();
+    protected void clearAccessibleSelectionFromContext(AccessibleContext ac) {
+        defaultSupplier.get();
     }
 
-    protected AccessibleContext getAccessibleSelectionFromContext(Supplier<AccessibleContext> defaultSupplier, AccessibleContext ac, int i) {
-        return defaultSupplier.get();
+    protected AccessibleContext getAccessibleSelectionFromContext(AccessibleContext ac, int i) {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
-    protected int getAccessibleSelectionCountFromContext(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleSelectionCountFromContext(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected boolean isAccessibleChildSelectedFromContext(Supplier<Boolean> defaultSupplier, AccessibleContext ac, int i) {
-        return defaultSupplier.get();
+    protected boolean isAccessibleChildSelectedFromContext(AccessibleContext ac, int i) {
+        return (Boolean) defaultSupplier.get();
     }
 
-    protected void removeAccessibleSelectionFromContext(Runnable defaultRunnable, AccessibleContext ac, int i) {
-        defaultRunnable.run();
+    protected void removeAccessibleSelectionFromContext(AccessibleContext ac, int i) {
+        defaultSupplier.get();
     }
 
-    protected void selectAllAccessibleSelectionFromContext(Runnable defaultRunnable, AccessibleContext ac) {
-        defaultRunnable.run();
+    protected void selectAllAccessibleSelectionFromContext(AccessibleContext ac) {
+        defaultSupplier.get();
     }
 
-    protected AccessibleTable getAccessibleTableFromContext(Supplier<AccessibleTable> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleTable getAccessibleTableFromContext(AccessibleContext ac) {
+        return (AccessibleTable) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableRowCount(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableRowCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableColumnCount(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableColumnCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected AccessibleContext getAccessibleTableCellAccessibleContext(Supplier<AccessibleContext> defaultSupplier,
-                                                                      AccessibleTable at, int row, int column) {
-        return defaultSupplier.get();
+    protected AccessibleContext getAccessibleTableCellAccessibleContext(AccessibleTable at, int row, int column) {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableCellIndex(Supplier<Integer> defaultSupplier, AccessibleTable at, int row, int column) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableCellIndex(AccessibleTable at, int row, int column) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableCellRowExtent(Supplier<Integer> defaultSupplier, AccessibleTable at, int row, int column) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableCellRowExtent(AccessibleTable at, int row, int column) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableCellColumnExtent(Supplier<Integer> defaultSupplier, AccessibleTable at, int row, int column) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableCellColumnExtent(AccessibleTable at, int row, int column) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected boolean isAccessibleTableCellSelected(Supplier<Boolean> defaultSupplier, AccessibleTable at, int row, int column) {
-        return defaultSupplier.get();
+    protected boolean isAccessibleTableCellSelected(AccessibleTable at, int row, int column) {
+        return (Boolean) defaultSupplier.get();
     }
 
-    protected AccessibleTable getAccessibleTableRowHeader(Supplier<AccessibleTable> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleTable getAccessibleTableRowHeader(AccessibleContext ac) {
+        return (AccessibleTable) defaultSupplier.get();
     }
 
-    protected AccessibleTable getAccessibleTableColumnHeader(Supplier<AccessibleTable> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected AccessibleTable getAccessibleTableColumnHeader(AccessibleContext ac) {
+        return (AccessibleTable) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableRowHeaderRowCount(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableRowHeaderRowCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableRowHeaderColumnCount(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableRowHeaderColumnCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableColumnHeaderRowCount(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableColumnHeaderRowCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected int getAccessibleTableColumnHeaderColumnCount(Supplier<Integer> defaultSupplier, AccessibleContext ac) {
-        return defaultSupplier.get();
+    protected int getAccessibleTableColumnHeaderColumnCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
     }
 
-    protected AccessibleContext getAccessibleTableRowDescription(Supplier<AccessibleContext> defaultSupplier, AccessibleTable table, int row) {
-        return defaultSupplier.get();
+    protected AccessibleContext getAccessibleTableRowDescription(AccessibleTable table, int row) {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
-    protected AccessibleContext getAccessibleTableColumnDescription(Supplier<AccessibleContext> defaultSupplier, AccessibleTable at, int column) {
-        return defaultSupplier.get();
+    protected AccessibleContext getAccessibleTableColumnDescription(AccessibleTable at, int column) {
+        return (AccessibleContext) defaultSupplier.get();
     }
 
 

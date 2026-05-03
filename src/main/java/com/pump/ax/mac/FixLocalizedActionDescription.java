@@ -19,8 +19,8 @@ public class FixLocalizedActionDescription extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public String getAccessibleActionDescription(Supplier<String> defaultImplementation, AccessibleAction aa, int index, Component c) {
-            String returnValue = super.getAccessibleActionDescription(defaultImplementation, aa, index, c);
+        protected String getAccessibleActionDescription(AccessibleAction aa, int index, Component c) {
+            String returnValue = super.getAccessibleActionDescription(aa, index, c);
             if (Objects.equals(UIManager.getString("AbstractButton.clickText"), returnValue)) {
                 return AccessibleAction.CLICK;
             }

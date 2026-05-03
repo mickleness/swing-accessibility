@@ -19,7 +19,7 @@ public class FixAnnouncePrevFocusedComponent extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public void requestFocus(Runnable defaultImplementation, Accessible a, Component c) {
+        protected void requestFocus(Accessible a, Component c) {
             // normally (without this intervention) CAccessible's AXChangeNotifier will receive
             // a AccessibleStateSet notification when the current focus owner loses the keyboard focus.
             // As a result, it will fire a CAccessible.valueChanged message. VoiceOver ends up reading
@@ -52,7 +52,7 @@ public class FixAnnouncePrevFocusedComponent extends Feature {
                     }
                 }
             }
-            super.requestFocus(defaultImplementation, a, c);
+            super.requestFocus(a, c);
         }
     };
 

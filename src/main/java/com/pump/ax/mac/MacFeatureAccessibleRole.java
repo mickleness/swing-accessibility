@@ -18,7 +18,7 @@ public class MacFeatureAccessibleRole extends AbstractFeatureAccessibleRole {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public String getAccessibleRole(Supplier<String> defaultImplementation, Accessible a, Component c) {
+        protected String getAccessibleRole(Accessible a, Component c) {
             if (a instanceof JComponent) {
                 JComponent jc = (JComponent) a;
                 AccessibleRole returnValue = MacFeatureAccessibleRole.this.getAccessibleRole(jc);
@@ -35,19 +35,19 @@ public class MacFeatureAccessibleRole extends AbstractFeatureAccessibleRole {
                     System.err.println("getAccessibleRole identified " + returnValue + " but could not identify its key");
                 }
             }
-            return super.getAccessibleRole(defaultImplementation, a, c);
+            return super.getAccessibleRole(a, c);
         }
 
         @Override
-        public Object[] invokeGetChildrenAndRoles(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, Object ops) {
-            Object[] returnValue = super.invokeGetChildrenAndRoles(defaultImplementation, a, c, whichChildren, allowIgnored, ops);
+        protected Object[] invokeGetChildrenAndRoles(Accessible a, Component c, int whichChildren, boolean allowIgnored, Object ops) {
+            Object[] returnValue = super.invokeGetChildrenAndRoles(a, c, whichChildren, allowIgnored, ops);
             replaceAccessibleRoles(returnValue, 2);
             return returnValue;
         }
 
         @Override
-        public Object[] getChildrenAndRolesRecursive(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, int level) {
-            Object[] returnValue = super.getChildrenAndRolesRecursive(defaultImplementation, a, c, whichChildren, allowIgnored, level);
+        protected Object[] getChildrenAndRolesRecursive(Accessible a, Component c, int whichChildren, boolean allowIgnored, int level) {
+            Object[] returnValue = super.getChildrenAndRolesRecursive(a, c, whichChildren, allowIgnored, level);
             replaceAccessibleRoles(returnValue, 3);
             return returnValue;
         }

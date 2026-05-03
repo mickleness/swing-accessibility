@@ -31,8 +31,8 @@ public class FixChangingAncestor extends Feature {
      */
     private final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
-            Object returnValue = super.invoke(invocationEvent, method, defaultSupplier, defaultRunnable, arguments);
+        public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Object[] arguments) {
+            Object returnValue = super.invoke(invocationEvent, method, defaultSupplier, arguments);
             if (returnValue != CAccessibilityHandler.RETURN_VALUE_UNSUPPORTED)
                 was_AX_ever_used = true;
             return returnValue;

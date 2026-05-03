@@ -20,7 +20,7 @@ public class FixAccessibleActionArgumentTypes extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Runnable defaultRunnable, Object[] arguments) {
+        public Object invoke(InvocationEvent invocationEvent, Method method, Supplier defaultSupplier, Object[] arguments) {
             if (method.getName().equals("doAccessibleAction")) {
                 if (arguments[0] instanceof AccessibleContext && !(arguments[0] instanceof AccessibleAction)) {
                     AccessibleAction aa = ((AccessibleContext) arguments[0]).getAccessibleAction();
@@ -29,7 +29,7 @@ public class FixAccessibleActionArgumentTypes extends Feature {
                 }
             }
 
-            return super.invoke(invocationEvent, method, defaultSupplier, defaultRunnable, arguments);
+            return super.invoke(invocationEvent, method, defaultSupplier, arguments);
         }
     };
 

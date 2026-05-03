@@ -20,14 +20,14 @@ public class FixReadingHTML extends Feature {
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
 
         @Override
-        public String getAccessibleName(Supplier<String> defaultImplementation, Accessible a, Component c) {
+        protected String getAccessibleName(Accessible a, Component c) {
 
             // TODO: compare this fix vs the fix for
             // https://bugs.openjdk.org/browse/JDK-4949105
 
             // TODO: can we set up a similar architecture so we can apply this solution on Windows?
 
-            String axName = super.getAccessibleName(defaultImplementation, a, c);
+            String axName = super.getAccessibleName(a, c);
             if (axName != null && axName.startsWith("<html>"))
                 axName = stripHtml(axName);
             return axName;

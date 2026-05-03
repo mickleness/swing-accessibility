@@ -121,7 +121,7 @@ public class AbstractBridgeController<H extends AbstractBridgeHandler> {
         return false;
     }
 
-    private class InvocationEventHelper implements Supplier<Object>, Runnable {
+    private class InvocationEventHelper implements Supplier<Object> {
         private final Method method;
         private final InvocationEvent invocationEvent;
         private final Runnable invocationEventRunnable;
@@ -186,15 +186,10 @@ public class AbstractBridgeController<H extends AbstractBridgeHandler> {
         }
 
         @Override
-        public void run() {
-            get();
-        }
-
-        @Override
         public Object get() {
             if (handlerIterator.hasNext()) {
                 AbstractBridgeHandler h = handlerIterator.next();
-                Object returnValue = h.invoke(invocationEvent, method, this, this, arguments);
+                Object returnValue = h.invoke(invocationEvent, method, this, arguments);
                 if (returnValue != AbstractBridgeHandler.RETURN_VALUE_UNSUPPORTED) {
                     return returnValue;
                 }

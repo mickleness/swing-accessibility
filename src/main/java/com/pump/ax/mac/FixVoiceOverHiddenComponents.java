@@ -21,16 +21,16 @@ public class FixVoiceOverHiddenComponents extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override
-        public Object[] invokeGetChildrenAndRoles(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, Object ops) {
-            Object[] returnValue = super.invokeGetChildrenAndRoles(defaultImplementation, a, c, whichChildren, allowIgnored, ops);
+        protected Object[] invokeGetChildrenAndRoles(Accessible a, Component c, int whichChildren, boolean allowIgnored, Object ops) {
+            Object[] returnValue = super.invokeGetChildrenAndRoles(a, c, whichChildren, allowIgnored, ops);
             if (!allowIgnored)
                 returnValue = removeHiddenComponents(returnValue, 2);
             return returnValue;
         }
 
         @Override
-        public Object[] getChildrenAndRolesRecursive(Supplier<Object[]> defaultImplementation, Accessible a, Component c, int whichChildren, boolean allowIgnored, int level) {
-            Object[] returnValue = super.getChildrenAndRolesRecursive(defaultImplementation, a, c, whichChildren, allowIgnored, level);
+        protected Object[] getChildrenAndRolesRecursive(Accessible a, Component c, int whichChildren, boolean allowIgnored, int level) {
+            Object[] returnValue = super.getChildrenAndRolesRecursive(a, c, whichChildren, allowIgnored, level);
             if (!allowIgnored)
                 returnValue = removeHiddenComponents(returnValue, 3);
             return returnValue;
