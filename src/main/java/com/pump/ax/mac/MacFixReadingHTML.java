@@ -16,6 +16,13 @@ import java.io.StringReader;
  * This is a work-around for <a href="https://bugs.openjdk.org/browse/JDK-4949105">JDK-4949105</a>.
  */
 public class MacFixReadingHTML extends Feature {
+
+    // I also tested this fix on Windows.
+
+    // NVDA doesn't need this fix: it correctly avoided announcing the HTML
+    // JAWS does suffer from the HTML bug, but my limited testing shows
+    // it does not use the AccessBridge class, so we can't intercept it.
+
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
 
         @Override
@@ -23,8 +30,6 @@ public class MacFixReadingHTML extends Feature {
 
             // TODO: compare this fix vs the fix for
             // https://bugs.openjdk.org/browse/JDK-4949105
-
-            // TODO: can we set up a similar architecture so we can apply this solution on Windows?
 
             String axName = super.getAccessibleName(a, c);
             if (axName != null && axName.startsWith("<html>"))
