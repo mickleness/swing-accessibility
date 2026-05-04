@@ -31,7 +31,7 @@ public abstract class AbstractFeatureAccessibleRole extends Feature {
      * Toggle whether the {@link #PROPERTY_ACCESSIBLE_ROLE} is consulted.
      *
      * If this property is toggled off then the client property is not consulted,
-     * but replacemenet roles are still consulted.
+     * but replacement roles are still consulted.
      */
     public void setClientPropertyActive(boolean b) {
         isClientPropertyActive = b;
