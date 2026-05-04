@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * This prevents VoiceOver from cataloging hidden components.
@@ -17,7 +16,7 @@ import java.util.function.Supplier;
  * This is a work-around for <a href="https://bugs.openjdk.org/browse/JDK-8377428">JDK-8377428</a>,
  * which should be resolved in OpenJDK v27.
  */
-public class FixVoiceOverHiddenComponents extends Feature {
+public class MacFixVoiceOverHiddenComponents extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override

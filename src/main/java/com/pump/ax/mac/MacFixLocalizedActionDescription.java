@@ -7,7 +7,6 @@ import javax.accessibility.AccessibleAction;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 /**
  * This de-localized the action description, which lets VoiceOver
@@ -15,7 +14,7 @@ import java.util.function.Supplier;
  *
  * This is a work-around for <a href="https://bugs.openjdk.org/browse/JDK-8377938">JDK-8377938</a>.
  */
-public class FixLocalizedActionDescription extends Feature {
+public class MacFixLocalizedActionDescription extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override

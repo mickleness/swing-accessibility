@@ -15,7 +15,7 @@ import java.awt.event.FocusListener;
  *
  * This is a work-around for <a href="https://bugs.openjdk.org/browse/JDK-8377936">JDK-8377936</a>.
  */
-public class FixAnnouncePrevFocusedComponent extends Feature {
+public class MacFixAnnouncePrevFocusedComponent extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override

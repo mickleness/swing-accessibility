@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  *
  * This is a work-around for <a href="https://bugs.openjdk.org/browse/JDK-8381236">JDK-8381236</a>
  */
-public class FixChangingAncestor extends Feature {
+public class MacFixChangingAncestor extends Feature {
     /**
      * This becomes true if we ever intercepted a CAccessibility or CAccessibleText method.
      */

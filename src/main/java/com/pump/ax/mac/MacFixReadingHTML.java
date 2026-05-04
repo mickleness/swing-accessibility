@@ -9,14 +9,13 @@ import javax.swing.text.html.parser.ParserDelegator;
 import java.awt.*;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.function.Supplier;
 
 /**
  * This strips out HTML from accessibility names.
  *
  * This is a work-around for <a href="https://bugs.openjdk.org/browse/JDK-4949105">JDK-4949105</a>.
  */
-public class FixReadingHTML extends Feature {
+public class MacFixReadingHTML extends Feature {
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
 
         @Override

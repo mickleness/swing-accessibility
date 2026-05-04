@@ -5,7 +5,6 @@ import com.pump.ax.Feature;
 
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
-import java.awt.*;
 import java.awt.event.InvocationEvent;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
@@ -16,7 +15,7 @@ import java.util.function.Supplier;
  *
  * This is a work-around for <a href="https://bugs.openjdk.org/browse/JDK-8380849">JDK-8380849</a>
  */
-public class FixAccessibleActionArgumentTypes extends Feature {
+public class MacFixAccessibleActionArgumentTypes extends Feature {
 
     final CAccessibilityHandler handler = new CAccessibilityHandler() {
         @Override

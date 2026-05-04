@@ -38,13 +38,13 @@ public class AXHelper {
         logger.log(Level.INFO, "Installing for JDK {0} on {1}", new Object[] { javaVersion, System.getProperty("os.name") });
 
         if (isMac) {
-            registerFeature(new FixVoiceOverHiddenComponents());
-            registerFeature(new FixAnnouncePrevFocusedComponent());
-            registerFeature(new FixAccessibleActionArgumentTypes());
-            registerFeature(new FixLocalizedActionDescription());
+            registerFeature(new MacFixVoiceOverHiddenComponents());
+            registerFeature(new MacFixAnnouncePrevFocusedComponent());
+            registerFeature(new MacFixAccessibleActionArgumentTypes());
+            registerFeature(new MacFixLocalizedActionDescription());
             registerFeature(new MacFeatureAccessibleRole());
-            registerFeature(new FixReadingHTML());
-            registerFeature(new FixChangingAncestor());
+            registerFeature(new MacFixReadingHTML());
+            registerFeature(new MacFixChangingAncestor());
 
             // TODO: also write fix for https://bugs.openjdk.org/browse/JDK-8378404
             // (use TransparentPopupFactory -- the Feature that doesn't use CAccessbilityController)
