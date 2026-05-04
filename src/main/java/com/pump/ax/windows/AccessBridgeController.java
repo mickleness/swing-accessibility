@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
+/**
+ * This appears to work with NVDA, but it does not appear to work with JAWS.
+ */
 public class AccessBridgeController extends AbstractBridgeController<AccessBridgeHandler> {
     static final String UNSUPPORTED_EXCEPTION_MESSAGE = "This feature is not supported because AccessBridgeController could not initialize correctly. This can usually be resolved by adding these VM arguments: `--add-opens java.desktop/java.awt.event=ALL-UNNAMED --add-opens jdk.accessibility/com.sun.java.accessibility.internal=ALL-UNNAMED`";
 
