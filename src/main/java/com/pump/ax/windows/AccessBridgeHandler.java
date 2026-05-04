@@ -3,6 +3,7 @@ package com.pump.ax.windows;
 import com.pump.ax.AbstractBridgeHandler;
 
 import javax.accessibility.*;
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import java.awt.*;
 import java.awt.event.InvocationEvent;
@@ -148,7 +149,115 @@ public class AccessBridgeHandler extends AbstractBridgeHandler {
                     return getAccessibleTableRowDescription((AccessibleTable) arguments[0], (Integer) arguments[1]);
                 case "getAccessibleTableColumnDescription":
                     return getAccessibleTableColumnDescription((AccessibleTable) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTableRowSelectionCount":
+                    return getAccessibleTableRowSelectionCount((AccessibleTable) arguments[0]);
+                case "getAccessibleTableRowSelections":
+                    return getAccessibleTableRowSelections((AccessibleTable) arguments[0], (Integer) arguments[0]);
+                case "isAccessibleTableRowSelected":
+                    return isAccessibleTableRowSelected((AccessibleTable) arguments[0], (Integer) arguments[1]);
+                case "isAccessibleTableColumnSelected":
+                    return isAccessibleTableColumnSelected((AccessibleTable) arguments[0],  (Integer) arguments[1]);
+                case "getAccessibleTableColumnSelectionCount":
+                    return getAccessibleTableColumnSelectionCount((AccessibleTable) arguments[0]);
+                case "getAccessibleTableColumnSelections":
+                    return getAccessibleTableColumnSelections((AccessibleTable) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTableRow":
+                    return getAccessibleTableRow((AccessibleTable) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTableColumn":
+                    return getAccessibleTableColumn((AccessibleTable) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleTableIndex":
+                    return getAccessibleTableIndex((AccessibleTable) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleRelationCount":
+                    return getAccessibleRelationCount((AccessibleContext) arguments[0]);
+                case "getAccessibleRelationKey":
+                    return getAccessibleRelationKey((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleRelationTargetCount":
+                    return getAccessibleRelationTargetCount((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleRelationTarget":
+                    return getAccessibleRelationTarget((AccessibleContext) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "getAccessibleHypertext":
+                    return getAccessibleHypertext((AccessibleContext) arguments[0]);
+                case "getAccessibleHyperlinkCount":
+                    return getAccessibleHyperlinkCount((AccessibleContext) arguments[0]);
+                case "getAccessibleHyperlinkText":
+                    return getAccessibleHyperlinkText((AccessibleHyperlink) arguments[0]);
+                case "getAccessibleHyperlinkURL":
+                    return getAccessibleHyperlinkURL((AccessibleHyperlink) arguments[0]);
+                case "getAccessibleHyperlinkStartIndex":
+                    return getAccessibleHyperlinkStartIndex((AccessibleHyperlink) arguments[0]);
+                case "getAccessibleHyperlinkEndIndex":
+                    return getAccessibleHyperlinkEndIndex((AccessibleHyperlink) arguments[0]);
+                case "getAccessibleHypertextLinkIndex":
+                    return getAccessibleHypertextLinkIndex((AccessibleHypertext) arguments[0], (Integer) arguments[1]);
+                case "activateAccessibleHyperlink":
+                    return activateAccessibleHyperlink((AccessibleContext) arguments[0], (AccessibleHyperlink) arguments[1]);
+                case "getMnemonic":
+                    return getMnemonic((AccessibleContext) arguments[0]);
+                case "getAccelerator":
+                    return getAccelerator((AccessibleContext) arguments[0]);
+                case "getAccessibleIconsCount":
+                    return getAccessibleIconsCount((AccessibleContext) arguments[0]);
+                case "getAccessibleIconDescription":
+                    return getAccessibleIconDescription((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleIconHeight":
+                    return getAccessibleIconHeight((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleIconWidth":
+                    return getAccessibleIconWidth((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "getAccessibleActionsCount":
+                    return getAccessibleActionsCount((AccessibleContext) arguments[0]);
+                case "getAccessibleActionName":
+                    return getAccessibleActionName((AccessibleContext) arguments[0], (Integer) arguments[1]);
+                case "doAccessibleActions":
+                    return doAccessibleActions((AccessibleContext) arguments[0], (String) arguments[1]);
+                case "setTextContents":
+                    return setTextContents((AccessibleContext) arguments[0], (String) arguments[1]);
+                case "getTopLevelObject":
+                    return getTopLevelObject((AccessibleContext) arguments[0]);
+                case "getParentWithRole":
+                    return getParentWithRole((AccessibleContext) arguments[0], (String) arguments[1]);
+                case "getObjectDepth":
+                    return getObjectDepth((AccessibleContext) arguments[0]);
+                case "getJAWSAccessibleName":
+                    return getJAWSAccessibleName((AccessibleContext) arguments[0]);
+                case "requestFocus":
+                    return requestFocus((AccessibleContext) arguments[0]);
+                case "selectTextRange":
+                    return selectTextRange((AccessibleContext) arguments[0], (Integer) arguments[1], (Integer) arguments[2]);
+                case "setCaretPosition":
+                    return setCaretPosition((AccessibleContext) arguments[0], (Integer) arguments[1]);
 
+                // these are methods we'll skip. If a complaint comes up we can
+                // maybe add them later:
+
+
+                case "getVisibleChild":
+                    // this includes an invokeAndWait, but it's only used for
+                    // logging. Intercepting it would serve no use.
+
+                // these are methods that have multiple InvocationEvents; maybe someday
+                // we can add support but for now let's skip them:
+                case "getAccessibleContextAt_1":
+                case "getVirtualAccessibleNameFromContext":
+                case "getAccessibleStatesStringFromContext":
+                case "getAccessibleChildFromContext":
+                case "expandStyleConstants":
+                case "getAccessibleHyperlink":
+                case "getActiveDescendent":
+                case "_getVisibleChildrenCount":
+                case "_getVisibleChild":
+
+                // These are methods I'm skipping because I thought they're too specific
+                // to be worth intercepting for most bug fixes:
+                case "getAccessibleFromNativeWindowHandle":
+                case "registerVirtualFrame":
+                case "revokeVirtualFrame":
+                case "getContextFromNativeWindowHandle":
+                case "addJavaEventNotification":
+                case "removeJavaEventNotification":
+                case "addAccessibilityEventNotification":
+                case "removeAccessibilityEventNotification":
+                    // we don't intercept these (anyone want them?)
+                    return defaultSupplier.get();
                 default:
                     return RETURN_VALUE_UNSUPPORTED;
             }
@@ -186,6 +295,7 @@ public class AccessBridgeHandler extends AbstractBridgeHandler {
     }
 
     protected AccessibleStateSet getAccessibleStatesStringFromContext_en_US(AccessibleContext ac) {
+        // this is not a typo; the Callable returns an AccessibleStateSet
         return (AccessibleStateSet) defaultSupplier.get();
     }
 
@@ -389,8 +499,158 @@ public class AccessBridgeHandler extends AbstractBridgeHandler {
         return (AccessibleContext) defaultSupplier.get();
     }
 
+    protected int getAccessibleTableRowSelectionCount(AccessibleTable at) {
+        return (Integer) defaultSupplier.get();
+    }
 
+    protected int getAccessibleTableRowSelections(AccessibleTable at, int i) {
+        return (Integer) defaultSupplier.get();
+    }
 
+    protected boolean isAccessibleTableRowSelected(AccessibleTable at, int row) {
+        return (Boolean) defaultSupplier.get();
+    }
+
+    protected boolean isAccessibleTableColumnSelected(AccessibleTable at, int column) {
+        return (Boolean) defaultSupplier.get();
+    }
+
+    protected int getAccessibleTableColumnSelectionCount(AccessibleTable at) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleTableColumnSelections(AccessibleTable at, int i) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleTableRow(AccessibleTable at, int index) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleTableColumn(AccessibleTable at, int index) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleTableIndex(AccessibleTable at, int row, int column) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected AccessibleRelationSet getAccessibleRelationCount(AccessibleContext ac) {
+        // this is not a typo: the Callable returns an AccessibleRelationSet instead of an int
+        return (AccessibleRelationSet) defaultSupplier.get();
+    }
+
+    protected String getAccessibleRelationKey(AccessibleContext ac, int i) {
+        return (String) defaultSupplier.get();
+    }
+
+    protected int getAccessibleRelationTargetCount(AccessibleContext ac, int i) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected AccessibleContext getAccessibleRelationTarget(AccessibleContext ac, int i, int j) {
+        return (AccessibleContext) defaultSupplier.get();
+    }
+
+    protected AccessibleHypertext getAccessibleHypertext(AccessibleContext ac) {
+        return (AccessibleHypertext) defaultSupplier.get();
+    }
+
+    protected int getAccessibleHyperlinkCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected String getAccessibleHyperlinkText(AccessibleHyperlink link) {
+        return (String) defaultSupplier.get();
+    }
+
+    protected String getAccessibleHyperlinkURL(AccessibleHyperlink link) {
+        return (String) defaultSupplier.get();
+    }
+
+    protected int getAccessibleHyperlinkStartIndex(AccessibleHyperlink link) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleHyperlinkEndIndex(AccessibleHyperlink link) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleHypertextLinkIndex(AccessibleHypertext hypertext, int charIndex) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected boolean activateAccessibleHyperlink(AccessibleContext ac, AccessibleHyperlink link) {
+        return (Boolean) defaultSupplier.get();
+    }
+
+    protected KeyStroke getMnemonic(AccessibleContext ac) {
+        return (KeyStroke) defaultSupplier.get();
+    }
+
+    protected KeyStroke getAccelerator(AccessibleContext ac) {
+        return (KeyStroke) defaultSupplier.get();
+    }
+
+    protected int getAccessibleIconsCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected String getAccessibleIconDescription(AccessibleContext ac, int index) {
+        return (String) defaultSupplier.get();
+    }
+
+    protected int getAccessibleIconHeight(AccessibleContext ac, int index) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleIconWidth(AccessibleContext ac, int index) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected int getAccessibleActionsCount(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected String getAccessibleActionName(AccessibleContext ac, int index) {
+        return (String) defaultSupplier.get();
+    }
+
+    protected boolean doAccessibleActions(AccessibleContext ac, String name) {
+        return (Boolean) defaultSupplier.get();
+    }
+
+    protected boolean setTextContents(AccessibleContext ac, String text) {
+        return (Boolean) defaultSupplier.get();
+    }
+
+    protected AccessibleContext getTopLevelObject (AccessibleContext ac) {
+        return (AccessibleContext) defaultSupplier.get();
+    }
+
+    protected AccessibleContext getParentWithRole (AccessibleContext ac, String roleName) {
+        return (AccessibleContext) defaultSupplier.get();
+    }
+
+    protected int getObjectDepth(AccessibleContext ac) {
+        return (Integer) defaultSupplier.get();
+    }
+
+    protected String getJAWSAccessibleName(AccessibleContext ac) {
+        return (String) defaultSupplier.get();
+    }
+
+    protected boolean requestFocus(AccessibleContext ac) {
+        return (Boolean) defaultSupplier.get();
+    }
+
+    protected boolean selectTextRange(AccessibleContext ac, int startIndex, int endIndex) {
+        return (Boolean) defaultSupplier.get();
+    }
+
+    protected boolean setCaretPosition(AccessibleContext ac, int position) {
+        return (Boolean) defaultSupplier.get();
+    }
 
     protected Component getComponent(AccessibleContext ac) {
         // TODO: write fallback; this may be too fragile
