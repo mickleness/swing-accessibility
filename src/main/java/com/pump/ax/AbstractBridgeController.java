@@ -19,8 +19,11 @@ public class AbstractBridgeController<H extends AbstractBridgeHandler> {
     protected static Method method_invocationEvent_finishedDispatching, method_callableWrapper_getResult;
 
     boolean isValid;
+    private final String callablePhrase, runnablePhrase;
 
     protected AbstractBridgeController(String callableWrapperClassname) {
+        callablePhrase = callableWrapperClassname;
+        runnablePhrase = callablePhrase.substring(0, callablePhrase.indexOf("$"));
         try {
             Class invocationEventClass = InvocationEvent.class;
             field_invocationEvent_runnable = getField(invocationEventClass, "runnable");
@@ -96,7 +99,7 @@ public class AbstractBridgeController<H extends AbstractBridgeHandler> {
             Callable<?> callable = null;
             Method method = null;
 
-            if (paramString.contains("com.sun.java.accessibility.internal.AccessBridge$InvocationUtils$CallableWrapper")) {
+            if (paramString.contains(callablePhrase)) {
                 // for everything that uses a return value
                 runnable = (Runnable) field_invocationEvent_runnable.get(event);
                 callable = (Callable<?>) field_callableWrapper_callable.get(runnable);
@@ -104,7 +107,7 @@ public class AbstractBridgeController<H extends AbstractBridgeHandler> {
                 if (method == null) {
                     // this can happen for lambdas, such as getAccessibleActionCount
                 }
-            } else if (paramString.contains("com.sun.java.accessibility.internal.AccessBridge")) {
+            } else if (paramString.contains(runnablePhrase)) {
                 // for Runnables with no return value:
                 runnable = (Runnable) field_invocationEvent_runnable.get(event);
                 method = runnable.getClass().getEnclosingMethod();
